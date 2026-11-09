@@ -21,7 +21,7 @@ export function DashboardPage() {
   })
 
   const upcoming = (publishedEvents.data?.items ?? [])
-    .filter((e) => getEventPhase(e).label !== '已結束')
+    .filter((e) => getEventPhase(e).key !== 'ended')
     .sort((a, b) => a.startAt.localeCompare(b.startAt))
 
   return (
