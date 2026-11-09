@@ -1,0 +1,24 @@
+import type { Employee } from './schema'
+
+/** 僅供 mock 模式使用的初始資料。清除 localStorage 即可還原 */
+const raw: Omit<Employee, 'id' | 'createdAt' | 'updatedAt'>[] = [
+  { name: '王小明', email: 'ming.wang@example.com', phone: '0912345678', department: 'engineering', title: '資深前端工程師', status: 'active', hireDate: '2021-03-15' },
+  { name: '陳怡君', email: 'yijun.chen@example.com', phone: '0923456789', department: 'product', title: '產品經理', status: 'active', hireDate: '2020-07-01' },
+  { name: '林志豪', email: 'zhihao.lin@example.com', phone: '0934567890', department: 'engineering', title: '後端工程師', status: 'active', hireDate: '2022-01-10' },
+  { name: '張雅婷', email: 'yating.chang@example.com', phone: '0945678901', department: 'design', title: 'UI/UX 設計師', status: 'onLeave', hireDate: '2021-09-01' },
+  { name: '李建宏', email: 'jianhong.li@example.com', phone: '0956789012', department: 'sales', title: '業務經理', status: 'active', hireDate: '2019-04-22' },
+  { name: '黃淑芬', email: 'shufen.huang@example.com', phone: '0967890123', department: 'hr', title: '人資專員', status: 'active', hireDate: '2023-02-13' },
+  { name: '吳俊傑', email: 'junjie.wu@example.com', phone: '0978901234', department: 'finance', title: '會計', status: 'resigned', hireDate: '2018-11-05' },
+  { name: '劉佳穎', email: 'jiaying.liu@example.com', phone: '0989012345', department: 'marketing', title: '行銷企劃', status: 'active', hireDate: '2022-06-20' },
+  { name: '蔡宗翰', email: 'zonghan.tsai@example.com', phone: '0911223344', department: 'engineering', title: 'DevOps 工程師', status: 'active', hireDate: '2023-08-01' },
+  { name: '楊心怡', email: 'xinyi.yang@example.com', phone: '0922334455', department: 'design', title: '視覺設計師', status: 'active', hireDate: '2024-03-04' },
+  { name: '許家豪', email: 'jiahao.hsu@example.com', phone: '0933445566', department: 'sales', title: '業務專員', status: 'active', hireDate: '2024-05-16' },
+  { name: '鄭雅雯', email: 'yawen.cheng@example.com', phone: '0944556677', department: 'product', title: '產品設計師', status: 'onLeave', hireDate: '2022-10-03' },
+  { name: '謝承恩', email: 'chengen.hsieh@example.com', phone: '0955667788', department: 'engineering', title: '技術主管', status: 'active', hireDate: '2017-08-14' },
+]
+
+export const employeeSeed: Employee[] = raw.map((e, i) => {
+  // 讓 createdAt 有先後順序，列表排序才穩定
+  const createdAt = new Date(Date.now() - i * 86_400_000).toISOString()
+  return { ...e, id: `emp-${i + 1}`, createdAt, updatedAt: createdAt }
+})
