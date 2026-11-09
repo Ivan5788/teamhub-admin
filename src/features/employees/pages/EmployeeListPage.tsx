@@ -46,12 +46,14 @@ export function EmployeeListPage() {
             onChange={(e) => list.setFilter('department', e.target.value)}
             options={DEPARTMENT.options}
             placeholder="全部部門"
+            aria-label="依部門篩選"
           />
           <Select
             value={list.filters.status}
             onChange={(e) => list.setFilter('status', e.target.value)}
             options={EMPLOYEE_STATUS.options}
             placeholder="全部狀態"
+            aria-label="依狀態篩選"
           />
         </TableToolbar>
 

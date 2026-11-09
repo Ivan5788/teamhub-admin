@@ -26,6 +26,7 @@ export function TableToolbar({
           value={keyword}
           onChange={(e) => onKeywordChange(e.target.value)}
           placeholder={placeholder}
+          aria-label={placeholder}
           className="pl-9"
         />
       </div>

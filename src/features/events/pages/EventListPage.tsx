@@ -54,6 +54,7 @@ export function EventListPage() {
             onChange={(e) => list.setFilter('category', e.target.value)}
             options={EVENT_CATEGORY.options}
             placeholder="全部類別"
+            aria-label="依類別篩選"
           />
         </TableToolbar>
 
