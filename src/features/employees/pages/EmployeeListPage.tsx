@@ -16,7 +16,7 @@ import type { Employee } from '../schema'
  */
 export function EmployeeListPage() {
   const list = useListState({ filterKeys: ['status', 'department'] })
-  const { data, isLoading, isFetching } = employeeHooks.useList(list.params)
+  const { data, isLoading, isFetching, isError, refetch } = employeeHooks.useList(list.params)
   const removeMutation = employeeHooks.useRemove()
   const dialogs = useCrudDialogs<Employee>()
 
@@ -61,12 +61,14 @@ export function EmployeeListPage() {
           rowKey={(r) => r.id}
           loading={isLoading}
           fetching={isFetching}
+          error={isError}
+          onRetry={refetch}
           emptyText="找不到符合條件的員工"
         />
         <Pagination
           page={list.page}
           pageSize={list.pageSize}
-          total={data?.total ?? 0}
+          total={data?.total}
           onChange={list.setPage}
         />
       </Card>

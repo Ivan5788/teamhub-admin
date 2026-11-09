@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import { Link } from 'react-router'
 import { CalendarCheck, CalendarClock, Users, type LucideIcon } from 'lucide-react'
 import { PageHeader } from '@/components/layout/PageHeader'
-import { Badge, Card } from '@/components/ui'
+import { Badge, Button, Card } from '@/components/ui'
 import { employeeHooks } from '@/features/employees'
 import { EVENT_CATEGORY, eventHooks, getEventPhase } from '@/features/events'
 import { formatDate } from '@/lib/utils'
@@ -54,6 +54,19 @@ export function DashboardPage() {
             <EmptyRow>目前沒有即將舉辦的活動</EmptyRow>
           )}
           {publishedEvents.isLoading && <EmptyRow>載入中…</EmptyRow>}
+          {publishedEvents.isError && !publishedEvents.data && (
+            <EmptyRow>
+              <span role="alert">活動資料載入失敗</span>
+              <Button
+                variant="secondary"
+                size="sm"
+                className="ml-3"
+                onClick={() => publishedEvents.refetch()}
+              >
+                重新載入
+              </Button>
+            </EmptyRow>
+          )}
         </ul>
       </Card>
     </>

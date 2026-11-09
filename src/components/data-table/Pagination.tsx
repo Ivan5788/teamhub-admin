@@ -1,22 +1,31 @@
+import { useEffect } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui'
 
 interface PaginationProps {
   page: number
   pageSize: number
-  total: number
+  /** 資料還沒載入時傳 undefined，避免把網址上的 ?page=3 誤判成超出範圍 */
+  total: number | undefined
   onChange: (page: number) => void
 }
 
-export function Pagination({ page, pageSize, total, onChange }: PaginationProps) {
-  const totalPages = Math.max(1, Math.ceil(total / pageSize))
-  const from = total === 0 ? 0 : (page - 1) * pageSize + 1
-  const to = Math.min(page * pageSize, total)
+export function Pagination({ page: requestedPage, pageSize, total, onChange }: PaginationProps) {
+  const count = total ?? 0
+  const totalPages = Math.max(1, Math.ceil(count / pageSize))
+  const page = Math.min(requestedPage, totalPages)
+  const from = count === 0 ? 0 : (page - 1) * pageSize + 1
+  const to = Math.min(page * pageSize, count)
+
+  // 刪掉最後一頁的唯一一筆，或網址頁碼過大時，退回實際存在的最後一頁
+  useEffect(() => {
+    if (total !== undefined && requestedPage > totalPages) onChange(totalPages)
+  }, [total, requestedPage, totalPages, onChange])
 
   return (
     <div className="flex items-center justify-between border-t border-slate-200 px-4 py-3 text-sm text-slate-600">
       <span>
-        第 {from}–{to} 筆，共 {total} 筆
+        第 {from}–{to} 筆，共 {count} 筆
       </span>
       <div className="flex items-center gap-2">
         <Button

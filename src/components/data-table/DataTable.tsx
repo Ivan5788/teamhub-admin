@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
-import { Inbox, Loader2 } from 'lucide-react'
+import { CircleAlert, Inbox, Loader2 } from 'lucide-react'
+import { Button } from '@/components/ui'
 import { cn } from '@/lib/utils'
 
 export interface Column<T> {
@@ -17,6 +18,9 @@ interface DataTableProps<T> {
   loading?: boolean
   /** 背景重新抓資料中（例如換頁），表格半透明但不清空 */
   fetching?: boolean
+  /** 載入失敗。沒有資料可顯示時才會蓋掉表格，背景更新失敗則保留舊資料 */
+  error?: boolean
+  onRetry?: () => void
   emptyText?: string
 }
 
@@ -30,6 +34,8 @@ export function DataTable<T>({
   rowKey,
   loading,
   fetching,
+  error,
+  onRetry,
   emptyText = '目前沒有資料',
 }: DataTableProps<T>) {
   return (
@@ -58,6 +64,16 @@ export function DataTable<T>({
             <StateRow colSpan={columns.length}>
               <Loader2 className="size-6 animate-spin text-slate-400" />
               載入中…
+            </StateRow>
+          ) : error && !data ? (
+            <StateRow colSpan={columns.length}>
+              <CircleAlert className="size-8 text-red-400" />
+              <span role="alert">資料載入失敗，請稍後再試</span>
+              {onRetry && (
+                <Button variant="secondary" size="sm" onClick={() => onRetry()} className="mt-2">
+                  重新載入
+                </Button>
+              )}
             </StateRow>
           ) : !data?.length ? (
             <StateRow colSpan={columns.length}>

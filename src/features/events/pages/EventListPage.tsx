@@ -14,7 +14,7 @@ const statusTabs = [{ value: '', label: '全部' }, ...EVENT_STATUS.options]
 
 export function EventListPage() {
   const list = useListState({ filterKeys: ['status', 'category'] })
-  const { data, isLoading, isFetching } = eventHooks.useList(list.params)
+  const { data, isLoading, isFetching, isError, refetch } = eventHooks.useList(list.params)
   const removeMutation = eventHooks.useRemove()
   const { toggle } = useTogglePublish()
   const dialogs = useCrudDialogs<CompanyEvent>()
@@ -63,12 +63,14 @@ export function EventListPage() {
           rowKey={(r) => r.id}
           loading={isLoading}
           fetching={isFetching}
+          error={isError}
+          onRetry={refetch}
           emptyText="找不到符合條件的活動"
         />
         <Pagination
           page={list.page}
           pageSize={list.pageSize}
-          total={data?.total ?? 0}
+          total={data?.total}
           onChange={list.setPage}
         />
       </Card>
