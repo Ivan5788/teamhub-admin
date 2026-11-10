@@ -25,7 +25,7 @@ export function AdminLayout() {
       >
         <div className="flex h-16 items-center gap-2 px-6 text-white">
           <Building2 className="size-6 text-indigo-400" />
-          <span className="font-semibold">公司管理後台</span>
+          <span className="font-semibold">TeamHub</span>
           <button
             className="ml-auto lg:hidden"
             onClick={() => setMobileOpen(false)}

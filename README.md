@@ -1,4 +1,4 @@
-# 公司管理後台
+# TeamHub 企業管理後台
 
 人員管理 + 公司活動上架管理。React 19 + TypeScript + Tailwind CSS v4。
 
