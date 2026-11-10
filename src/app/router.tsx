@@ -25,7 +25,7 @@ export const router = createBrowserRouter([
     children: [
       {
         index: true,
-        ...lazyPage(() => import('@/features/dashboard/DashboardPage').then((m) => m.DashboardPage)),
+        ...lazyPage(() => import('@/features/dashboard').then((m) => m.DashboardPage)),
       },
       {
         path: 'employees',

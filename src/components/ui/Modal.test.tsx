@@ -8,12 +8,20 @@ const close = () => screen.getByRole('button', { name: '關閉' })
 
 describe('Modal', () => {
   it('以標題作為對話框名稱', () => {
-    render(<Modal open onClose={() => {}} title="編輯員工" children={<input />} />)
+    render(
+      <Modal open onClose={() => {}} title="編輯員工">
+        <input />
+      </Modal>,
+    )
     expect(screen.getByRole('dialog', { name: '編輯員工' })).toBeInTheDocument()
   })
 
   it('開啟時聚焦內容的第一個欄位', () => {
-    render(<Modal open onClose={() => {}} title="t" children={<input aria-label="姓名" />} />)
+    render(
+      <Modal open onClose={() => {}} title="t">
+        <input aria-label="姓名" />
+      </Modal>,
+    )
     expect(screen.getByLabelText('姓名')).toHaveFocus()
   })
 
@@ -53,10 +61,18 @@ describe('Modal', () => {
         <input aria-label="第二欄" />
       </>
     )
-    const { rerender } = render(<Modal open onClose={() => {}} title="t" children={content} />)
+    const { rerender } = render(
+      <Modal open onClose={() => {}} title="t">
+        {content}
+      </Modal>,
+    )
 
     await user.click(screen.getByLabelText('第二欄'))
-    rerender(<Modal open onClose={() => {}} title="t" children={content} />)
+    rerender(
+      <Modal open onClose={() => {}} title="t">
+        {content}
+      </Modal>,
+    )
 
     expect(screen.getByLabelText('第二欄')).toHaveFocus()
   })
@@ -65,8 +81,16 @@ describe('Modal', () => {
     const user = userEvent.setup()
     const first = vi.fn()
     const latest = vi.fn()
-    const { rerender } = render(<Modal open onClose={first} title="t" children={<input />} />)
-    rerender(<Modal open onClose={latest} title="t" children={<input />} />)
+    const { rerender } = render(
+      <Modal open onClose={first} title="t">
+        <input />
+      </Modal>,
+    )
+    rerender(
+      <Modal open onClose={latest} title="t">
+        <input />
+      </Modal>,
+    )
 
     await user.keyboard('{Escape}')
 
@@ -80,7 +104,9 @@ describe('Modal', () => {
       return (
         <>
           <button onClick={() => setOpen(true)}>開啟</button>
-          <Modal open={open} onClose={() => setOpen(false)} title="t" children={<input />} />
+          <Modal open={open} onClose={() => setOpen(false)} title="t">
+            <input />
+          </Modal>
         </>
       )
     }

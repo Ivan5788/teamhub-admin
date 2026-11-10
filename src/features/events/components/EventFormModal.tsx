@@ -1,4 +1,4 @@
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Field, FormModal, Input, Select, Textarea } from '@/components/ui'
 import { toDateTimeLocal } from '@/lib/utils'
@@ -25,7 +25,7 @@ export function EventFormModal({ event, onClose }: Props) {
   const {
     register,
     handleSubmit,
-    watch,
+    control,
     formState: { errors },
   } = useForm<EventFormValues>({
     resolver: zodResolver(eventFormSchema),
@@ -34,7 +34,7 @@ export function EventFormModal({ event, onClose }: Props) {
       : { status: 'draft', description: '', coverUrl: '', capacity: 30 },
   })
 
-  const coverUrl = watch('coverUrl')
+  const coverUrl = useWatch({ control, name: 'coverUrl' })
 
   const onSubmit = (values: EventFormValues) => {
     // 表單值（datetime-local）→ 後端資料（ISO 時間）
