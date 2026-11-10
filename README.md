@@ -1,11 +1,15 @@
 # TeamHub 企業管理後台
 
+[![CI](https://github.com/Ivan5788/teamhub-admin/actions/workflows/ci.yml/badge.svg)](https://github.com/Ivan5788/teamhub-admin/actions/workflows/ci.yml)
+
 人員管理 + 公司活動上架管理。React 19 + TypeScript + Tailwind CSS v4。
 
 ```bash
 npm install
 npm run dev        # http://localhost:5173
 npm run build      # 型別檢查 + 打包
+npm run lint       # Oxlint，含模組邊界規則
+npm test           # Vitest + Testing Library
 ```
 
 預設使用 **mock 資料**（存在瀏覽器 localStorage），不需要後端即可開發。
