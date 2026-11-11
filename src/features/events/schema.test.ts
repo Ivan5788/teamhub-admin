@@ -28,6 +28,17 @@ describe('eventFormSchema', () => {
     expect(errorPaths({ ...valid, endAt: valid.startAt })).toEqual(['endAt'])
   })
 
+  it('其他欄位還沒填時，也會即時檢查時間先後', () => {
+    expect(errorPaths({ ...valid, title: '', endAt: '2026-12-01T17:00' })).toEqual([
+      'title',
+      'endAt',
+    ])
+  })
+
+  it('時間還沒填完時不檢查先後', () => {
+    expect(errorPaths({ ...valid, endAt: '' })).toEqual(['endAt'])
+  })
+
   it('封面網址有填時必須是合法 URL', () => {
     expect(errorPaths({ ...valid, coverUrl: 'not-a-url' })).toEqual(['coverUrl'])
     expect(errorPaths({ ...valid, coverUrl: 'https://example.com/a.png' })).toEqual([])

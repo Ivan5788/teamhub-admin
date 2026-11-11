@@ -2,8 +2,48 @@
 
 @theme {
   --font-sans: 'Inter', 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', system-ui, sans-serif;
+  --animate-shake: shake 0.4s ease-in-out;
+  --animate-fade-in: fade-in 0.2s ease-out;
+  --animate-sheet-in: sheet-in 0.25s cubic-bezier(0.32, 0.72, 0, 1);
+  --animate-dialog-in: dialog-in 0.18s ease-out;
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @keyframes sheet-in {
+    from {
+      transform: translateY(100%);
+    }
+  }
+
+  @keyframes dialog-in {
+    from {
+      opacity: 0;
+      transform: scale(0.97);
+    }
+  }
+
+  @keyframes shake {
+    0%,
+    100% {
+      transform: translateX(0);
+    }
+    20%,
+    60% {
+      transform: translateX(-5px);
+    }
+    40%,
+    80% {
+      transform: translateX(5px);
+    }
+  }
 }
 
 body {
   @apply bg-slate-50 text-slate-900 antialiased;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
