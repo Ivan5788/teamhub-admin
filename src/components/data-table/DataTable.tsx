@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
-import { CircleAlert, Inbox, Loader2 } from 'lucide-react'
+import { CircleAlert, Inbox } from 'lucide-react'
 import { Button } from '@/components/ui'
+import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { cn } from '@/lib/utils'
 
 export interface Column<T> {
@@ -9,6 +10,11 @@ export interface Column<T> {
   header: ReactNode
   render: (row: T) => ReactNode
   className?: string
+  /**
+   * 手機版卡片中的位置，預設為一般資料格：
+   * title 卡片標題、wide 佔滿整行、actions 底部操作區、hidden 手機版不顯示
+   */
+  mobile?: 'title' | 'wide' | 'actions' | 'hidden'
 }
 
 interface DataTableProps<T> {
@@ -22,10 +28,14 @@ interface DataTableProps<T> {
   error?: boolean
   onRetry?: () => void
   emptyText?: string
+  /** 空狀態下的下一步，例如「清除篩選」或「新增」 */
+  emptyAction?: ReactNode
 }
 
+const SKELETON_ROWS = [0, 1, 2, 3, 4]
+
 /**
- * 通用表格。欄位用設定陣列描述，頁面不需要自己寫 <table> 結構：
+ * 通用表格，手機版自動改成卡片列表。欄位用設定陣列描述，頁面不需要自己寫 <table> 結構：
  *   const columns: Column<Employee>[] = [{ key: 'name', header: '姓名', render: (r) => r.name }]
  */
 export function DataTable<T>({
@@ -37,9 +47,70 @@ export function DataTable<T>({
   error,
   onRetry,
   emptyText = '目前沒有資料',
+  emptyAction,
 }: DataTableProps<T>) {
+  const isTableLayout = useMediaQuery('(min-width: 48rem)')
+
+  let message: ReactNode = null
+  if (!loading && error && !data) {
+    message = (
+      <StateMessage icon={<CircleAlert className="size-8 text-red-400" />}>
+        <span role="alert">資料載入失敗，請稍後再試</span>
+        {onRetry && (
+          <Button variant="secondary" size="sm" onClick={() => onRetry()} className="mt-2">
+            重新載入
+          </Button>
+        )}
+      </StateMessage>
+    )
+  } else if (!loading && !data?.length) {
+    message = (
+      <StateMessage icon={<Inbox className="size-8 text-slate-300" />}>
+        {emptyText}
+        {emptyAction && <div className="mt-2">{emptyAction}</div>}
+      </StateMessage>
+    )
+  }
+
+  const busyText = loading && (
+    <span role="status" className="sr-only">
+      載入中
+    </span>
+  )
+
+  if (!isTableLayout) {
+    return (
+      <div className={cn('relative transition-opacity', fetching && 'opacity-60')}>
+        {busyText}
+        {loading ? (
+          <div className="divide-y divide-slate-100">
+            {SKELETON_ROWS.slice(0, 3).map((i) => (
+              <div key={i} className="space-y-3 p-4">
+                <Bar className="w-1/2" />
+                <Bar className="w-3/4" />
+                <Bar className="w-2/3" />
+              </div>
+            ))}
+          </div>
+        ) : (
+          (message ?? (
+            <ul className="divide-y divide-slate-100">
+              {data?.map((row) => (
+                <li key={rowKey(row)}>
+                  <MobileCard columns={columns} row={row} />
+                </li>
+              ))}
+            </ul>
+          ))
+        )}
+      </div>
+    )
+  }
+
+  // relative：讓 sr-only（絕對定位）的欄位標題留在捲動容器內，不會把整個頁面撐寬
   return (
-    <div className="overflow-x-auto">
+    <div className="relative overflow-x-auto">
+      {busyText}
       <table className="min-w-full divide-y divide-slate-200 text-sm">
         <thead className="bg-slate-50">
           <tr>
@@ -61,27 +132,21 @@ export function DataTable<T>({
           className={cn('divide-y divide-slate-100 transition-opacity', fetching && 'opacity-60')}
         >
           {loading ? (
-            <StateRow colSpan={columns.length}>
-              <Loader2 className="size-6 animate-spin text-slate-400" />
-              載入中…
-            </StateRow>
-          ) : error && !data ? (
-            <StateRow colSpan={columns.length}>
-              <CircleAlert className="size-8 text-red-400" />
-              <span role="alert">資料載入失敗，請稍後再試</span>
-              {onRetry && (
-                <Button variant="secondary" size="sm" onClick={() => onRetry()} className="mt-2">
-                  重新載入
-                </Button>
-              )}
-            </StateRow>
-          ) : !data?.length ? (
-            <StateRow colSpan={columns.length}>
-              <Inbox className="size-8 text-slate-300" />
-              {emptyText}
-            </StateRow>
+            SKELETON_ROWS.map((i) => (
+              <tr key={i}>
+                {columns.map((col) => (
+                  <td key={col.key} className="px-4 py-4">
+                    <Bar />
+                  </td>
+                ))}
+              </tr>
+            ))
+          ) : message ? (
+            <tr>
+              <td colSpan={columns.length}>{message}</td>
+            </tr>
           ) : (
-            data.map((row) => (
+            data?.map((row) => (
               <tr key={rowKey(row)} className="hover:bg-slate-50/60">
                 {columns.map((col) => (
                   <td key={col.key} className={cn('px-4 py-3 text-slate-700', col.className)}>
@@ -97,12 +162,40 @@ export function DataTable<T>({
   )
 }
 
-function StateRow({ colSpan, children }: { colSpan: number; children: ReactNode }) {
+function MobileCard<T>({ columns, row }: { columns: Column<T>[]; row: T }) {
+  const titles = columns.filter((c) => c.mobile === 'title')
+  const fields = columns.filter((c) => !c.mobile || c.mobile === 'wide')
+  const actions = columns.filter((c) => c.mobile === 'actions')
+
   return (
-    <tr>
-      <td colSpan={colSpan} className="py-16">
-        <div className="flex flex-col items-center gap-2 text-slate-500">{children}</div>
-      </td>
-    </tr>
+    <div className="space-y-3 p-4 text-sm text-slate-700">
+      {titles.map((col) => (
+        <div key={col.key}>{col.render(row)}</div>
+      ))}
+      <dl className="grid grid-cols-2 gap-x-4 gap-y-3">
+        {fields.map((col) => (
+          <div key={col.key} className={cn('min-w-0', col.mobile === 'wide' && 'col-span-2')}>
+            <dt className="text-xs text-slate-500">{col.header}</dt>
+            <dd className="mt-0.5 break-words">{col.render(row)}</dd>
+          </div>
+        ))}
+      </dl>
+      {actions.map((col) => (
+        <div key={col.key}>{col.render(row)}</div>
+      ))}
+    </div>
   )
+}
+
+function StateMessage({ icon, children }: { icon: ReactNode; children: ReactNode }) {
+  return (
+    <div className="flex flex-col items-center gap-2 px-4 py-16 text-center text-slate-500">
+      {icon}
+      {children}
+    </div>
+  )
+}
+
+function Bar({ className }: { className?: string }) {
+  return <div className={cn('h-4 rounded bg-slate-200 motion-safe:animate-pulse', className)} />
 }

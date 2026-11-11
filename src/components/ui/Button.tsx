@@ -10,9 +10,10 @@ const variants = {
 }
 
 const sizes = {
-  sm: 'h-8 px-3 text-sm gap-1.5',
-  md: 'h-10 px-4 text-sm gap-2',
-  icon: 'h-8 w-8 justify-center',
+  // 手機版放大到接近 44px 的觸控目標，桌面維持緊湊
+  sm: 'h-10 px-3 text-sm gap-1.5 sm:h-8',
+  md: 'h-11 px-4 text-sm gap-2 sm:h-10',
+  icon: 'size-11 sm:size-8',
 }
 
 interface ButtonProps extends ComponentProps<'button'> {
@@ -36,7 +37,7 @@ export function Button({
       type={type}
       disabled={disabled || loading}
       className={cn(
-        'inline-flex shrink-0 items-center rounded-lg font-medium whitespace-nowrap transition-colors',
+        'inline-flex shrink-0 items-center justify-center rounded-lg font-medium whitespace-nowrap transition-colors',
         'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600',
         'disabled:cursor-not-allowed disabled:opacity-70',
         variants[variant],

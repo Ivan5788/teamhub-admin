@@ -5,7 +5,7 @@ import { PageHeader } from '@/components/layout/PageHeader'
 import { Badge, Button, Card } from '@/components/ui'
 import { employeeHooks } from '@/features/employees'
 import { EVENT_CATEGORY, eventHooks, getEventPhase } from '@/features/events'
-import { formatDate } from '@/lib/utils'
+import { cn, formatDate } from '@/lib/utils'
 
 export function DashboardPage() {
   const activeEmployees = employeeHooks.useList({
@@ -28,10 +28,25 @@ export function DashboardPage() {
     <>
       <PageHeader title="總覽" description="公司人員與活動概況" />
 
-      <div className="grid gap-4 sm:grid-cols-3">
-        <StatCard icon={Users} label="在職員工" value={activeEmployees.data?.total} to="/employees?status=active" />
-        <StatCard icon={CalendarCheck} label="已上架活動" value={publishedEvents.data?.total} to="/events?status=published" />
-        <StatCard icon={CalendarClock} label="即將舉辦" value={publishedEvents.data && upcoming.length} to="/events?status=published" />
+      <div className="grid grid-cols-3 gap-3 sm:gap-4">
+        <StatCard
+          icon={Users}
+          label="在職員工"
+          value={activeEmployees.data?.total}
+          to="/employees?status=active"
+        />
+        <StatCard
+          icon={CalendarCheck}
+          label="已上架活動"
+          value={publishedEvents.data?.total}
+          to="/events?status=published"
+        />
+        <StatCard
+          icon={CalendarClock}
+          label="即將舉辦"
+          value={publishedEvents.data && upcoming.length}
+          to="/events?status=published"
+        />
       </div>
 
       <Card className="mt-6">
@@ -47,13 +62,21 @@ export function DashboardPage() {
                   {formatDate(e.startAt, true)} · {e.location}
                 </div>
               </div>
-              <Badge tone={EVENT_CATEGORY.tone(e.category)}>{EVENT_CATEGORY.label(e.category)}</Badge>
+              <Badge tone={EVENT_CATEGORY.tone(e.category)}>
+                {EVENT_CATEGORY.label(e.category)}
+              </Badge>
             </li>
           ))}
           {publishedEvents.data && upcoming.length === 0 && (
             <EmptyRow>目前沒有即將舉辦的活動</EmptyRow>
           )}
-          {publishedEvents.isLoading && <EmptyRow>載入中…</EmptyRow>}
+          {publishedEvents.isLoading &&
+            [0, 1, 2].map((i) => (
+              <li key={i} className="space-y-2 px-5 py-3">
+                <Skeleton className="h-4 w-2/3" />
+                <Skeleton className="h-3 w-1/2" />
+              </li>
+            ))}
           {publishedEvents.isError && !publishedEvents.data && (
             <EmptyRow>
               <span role="alert">活動資料載入失敗</span>
@@ -82,18 +105,27 @@ interface StatCardProps {
 
 function StatCard({ icon: Icon, label, value, to }: StatCardProps) {
   return (
-    <Link to={to}>
-      <Card className="flex items-center gap-4 p-5 transition-shadow hover:shadow-md">
-        <div className="flex size-12 items-center justify-center rounded-xl bg-indigo-50">
-          <Icon className="size-6 text-indigo-600" />
+    <Link
+      to={to}
+      className="rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+    >
+      <Card className="flex h-full flex-col items-start gap-2 p-3 transition-shadow hover:shadow-md sm:flex-row sm:items-center sm:gap-4 sm:p-5">
+        <div className="flex size-9 items-center justify-center rounded-lg bg-indigo-50 sm:size-12 sm:rounded-xl">
+          <Icon className="size-5 text-indigo-600 sm:size-6" />
         </div>
         <div>
-          <div className="text-sm text-slate-500">{label}</div>
-          <div className="text-2xl font-semibold text-slate-900 tabular-nums">{value ?? '–'}</div>
+          <div className="text-xs text-slate-500 sm:text-sm">{label}</div>
+          <div className="text-xl font-semibold text-slate-900 tabular-nums sm:text-2xl">
+            {value ?? <Skeleton className="mt-1 h-6 w-8" />}
+          </div>
         </div>
       </Card>
     </Link>
   )
+}
+
+function Skeleton({ className }: { className: string }) {
+  return <div className={cn('rounded bg-slate-200 motion-safe:animate-pulse', className)} />
 }
 
 function EmptyRow({ children }: { children: ReactNode }) {

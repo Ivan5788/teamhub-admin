@@ -16,8 +16,10 @@ export function Tabs({ value, onChange, options }: TabsProps) {
           key={opt.value}
           type="button"
           onClick={() => onChange(opt.value)}
+          aria-pressed={value === opt.value}
           className={cn(
             '-mb-px border-b-2 px-3 py-3 text-sm font-medium whitespace-nowrap transition-colors',
+            'focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-indigo-600',
             value === opt.value
               ? 'border-indigo-600 text-indigo-600'
               : 'border-transparent text-slate-500 hover:text-slate-700',

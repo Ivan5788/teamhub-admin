@@ -21,6 +21,7 @@ export function getEventColumns({
     {
       key: 'title',
       header: '活動',
+      mobile: 'title',
       render: (r) => (
         <div className="flex items-center gap-3">
           {r.coverUrl ? (
@@ -44,6 +45,7 @@ export function getEventColumns({
     {
       key: 'time',
       header: '活動時間',
+      mobile: 'wide',
       render: (r) => {
         const phase = getEventPhase(r)
         return (
@@ -61,6 +63,7 @@ export function getEventColumns({
     {
       key: 'location',
       header: '地點',
+      mobile: 'wide',
       render: (r) => <span className="line-clamp-2 max-w-48">{r.location}</span>,
     },
     { key: 'capacity', header: '人數上限', render: (r) => `${r.capacity} 人` },
@@ -72,6 +75,7 @@ export function getEventColumns({
     {
       key: 'actions',
       header: <span className="sr-only">操作</span>,
+      mobile: 'actions',
       className: 'text-right',
       render: (r) => (
         <div className="flex items-center justify-end gap-1">

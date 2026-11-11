@@ -16,6 +16,7 @@ export function getEmployeeColumns({ onEdit, onDelete }: Actions): Column<Employ
     {
       key: 'name',
       header: '員工',
+      mobile: 'title',
       render: (r) => (
         <div className="flex items-center gap-3">
           <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-indigo-50 font-medium text-indigo-700">
@@ -41,11 +42,13 @@ export function getEmployeeColumns({ onEdit, onDelete }: Actions): Column<Employ
     {
       key: 'hireDate',
       header: '到職日',
+      mobile: 'hidden',
       render: (r) => <span className="tabular-nums">{formatDate(r.hireDate)}</span>,
     },
     {
       key: 'actions',
       header: <span className="sr-only">操作</span>,
+      mobile: 'actions',
       className: 'text-right',
       render: (r) => (
         <div className="flex justify-end gap-1">

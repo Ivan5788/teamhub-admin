@@ -22,6 +22,12 @@ export function Pagination({ page: requestedPage, pageSize, total, onChange }: P
     if (total !== undefined && requestedPage > totalPages) onChange(totalPages)
   }, [total, requestedPage, totalPages, onChange])
 
+  const goTo = (target: number) => {
+    onChange(target)
+    // 分頁鈕在列表底部，換頁後回到頂端才看得到新資料的開頭
+    window.scrollTo({ top: 0 })
+  }
+
   return (
     <div className="flex items-center justify-between border-t border-slate-200 px-4 py-3 text-sm text-slate-600">
       <span>
@@ -32,7 +38,7 @@ export function Pagination({ page: requestedPage, pageSize, total, onChange }: P
           variant="secondary"
           size="icon"
           disabled={page <= 1}
-          onClick={() => onChange(page - 1)}
+          onClick={() => goTo(page - 1)}
           aria-label="上一頁"
         >
           <ChevronLeft className="size-4" />
@@ -44,7 +50,7 @@ export function Pagination({ page: requestedPage, pageSize, total, onChange }: P
           variant="secondary"
           size="icon"
           disabled={page >= totalPages}
-          onClick={() => onChange(page + 1)}
+          onClick={() => goTo(page + 1)}
           aria-label="下一頁"
         >
           <ChevronRight className="size-4" />

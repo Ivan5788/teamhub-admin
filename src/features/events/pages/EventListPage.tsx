@@ -66,7 +66,18 @@ export function EventListPage() {
           fetching={isFetching}
           error={isError}
           onRetry={refetch}
-          emptyText="找不到符合條件的活動"
+          emptyText={list.hasFilters ? '找不到符合條件的活動' : '還沒有活動資料'}
+          emptyAction={
+            list.hasFilters ? (
+              <Button variant="secondary" size="sm" onClick={list.clearFilters}>
+                清除搜尋與篩選
+              </Button>
+            ) : (
+              <Button size="sm" onClick={dialogs.openCreate}>
+                新增活動
+              </Button>
+            )
+          }
         />
         <Pagination
           page={list.page}

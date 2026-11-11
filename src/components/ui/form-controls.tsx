@@ -6,13 +6,16 @@ import { cn } from '@/lib/utils'
  *   <Input {...register('name')} />
  */
 
+// 手機版字級 16px：iOS Safari 在小於 16px 的欄位聚焦時會自動放大頁面
 const controlClass =
-  'block w-full rounded-lg border-0 bg-white px-3 py-2 text-sm text-slate-900 ring-1 ring-slate-300 ' +
-  'placeholder:text-slate-400 focus:ring-2 focus:ring-indigo-600 focus:outline-none ' +
+  'block w-full min-w-0 rounded-lg border-0 bg-white px-3 py-2 text-base text-slate-900 ring-1 ring-slate-300 sm:text-sm ' +
+  'placeholder:text-slate-500 focus:ring-2 focus:ring-indigo-600 focus:outline-none ' +
   'disabled:bg-slate-50 disabled:text-slate-500 aria-invalid:ring-red-500'
 
+const controlHeight = 'h-11 sm:h-10'
+
 export function Input({ className, ...props }: ComponentProps<'input'>) {
-  return <input className={cn(controlClass, 'h-10', className)} {...props} />
+  return <input className={cn(controlClass, controlHeight, className)} {...props} />
 }
 
 export function Textarea({ className, ...props }: ComponentProps<'textarea'>) {
@@ -32,7 +35,7 @@ interface SelectProps extends ComponentProps<'select'> {
 
 export function Select({ options, placeholder, className, ...props }: SelectProps) {
   return (
-    <select className={cn(controlClass, 'h-10 pr-8', className)} {...props}>
+    <select className={cn(controlClass, controlHeight, 'pr-8', className)} {...props}>
       {placeholder !== undefined && <option value="">{placeholder}</option>}
       {options.map((o) => (
         <option key={o.value} value={o.value}>
