@@ -35,6 +35,15 @@ describe('useListState', () => {
     expect(result.current.page).toBe(1)
   })
 
+  it('清除全部搜尋與篩選條件', () => {
+    const { result } = setup('/?page=3&q=王&status=active')
+    expect(result.current.hasFilters).toBe(true)
+    act(() => result.current.clearFilters())
+    expect(result.current.hasFilters).toBe(false)
+    expect(result.current.page).toBe(1)
+    expect(result.current.keyword).toBe('')
+  })
+
   it('換頁時保留其他條件', () => {
     const { result } = setup('/?status=active')
     act(() => result.current.setPage(2))

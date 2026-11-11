@@ -1,6 +1,5 @@
 import { useSearchParams } from 'react-router'
 import type { ListParams } from '@/lib/api'
-import { useDebounce } from './useDebounce'
 
 /**
  * 列表頁的「分頁 / 關鍵字 / 篩選」狀態，同步存在網址上（?page=2&q=王&status=active）。
@@ -22,8 +21,6 @@ export function useListState<K extends string = never>({
     filterKeys.map((k) => [k, searchParams.get(k) ?? '']),
   ) as Record<K, string>
 
-  const debouncedKeyword = useDebounce(keyword)
-
   /** 改搜尋或篩選條件時，自動回到第 1 頁 */
   const setParam = (key: string, value: string) => {
     setSearchParams(
@@ -38,7 +35,8 @@ export function useListState<K extends string = never>({
     )
   }
 
-  const params: ListParams = { page, pageSize, keyword: debouncedKeyword, filters }
+  const params: ListParams = { page, pageSize, keyword, filters }
+  const hasFilters = !!keyword || filterKeys.some((k) => searchParams.get(k))
 
   return {
     params,
@@ -46,6 +44,8 @@ export function useListState<K extends string = never>({
     pageSize,
     keyword,
     filters,
+    hasFilters,
+    clearFilters: () => setSearchParams(new URLSearchParams(), { replace: true }),
     setPage: (p: number) => setParam('page', p > 1 ? String(p) : ''),
     setKeyword: (q: string) => setParam('q', q),
     setFilter: (key: K, value: string) => setParam(key, value),
