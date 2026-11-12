@@ -135,6 +135,10 @@ export const announcementHooks = createResourceHooks('announcements', announceme
 | --- | --- |
 | 表單加一個欄位 | `schema.ts` 加規則 → `XxxFormModal.tsx` 加輸入框 |
 | 列表多顯示一欄 | `xxx-columns.tsx` |
+| 調整手機卡片的呈現 | 欄位設定的 `mobile`：`title`、`wide`、`actions`、`hidden` |
+| 表格在某些寬度被擠壓 | 列表頁 `<DataTable minTableWidth={...}>`，可用寬度不足時改用卡片 |
+| 需要即時回饋的更新（例如切換開關） | `xxxHooks.useUpdate({ optimistic: true })` |
+| 新增端對端測試 | `e2e/*.spec.ts`，手機情境放在 `mobile.spec.ts` |
 | 加一個篩選條件 | 列表頁 `useListState({ filterKeys: [...] })` + `<TableToolbar>` 裡放 `<Select>` |
 | 新增狀態選項 / 改顏色 | `constants.ts` |
 | 非 CRUD 的業務動作（例如上架） | 參考 `features/events/api.ts` 的 `useTogglePublish` |
