@@ -1,10 +1,9 @@
 import { ArrowDownToLine, ArrowUpFromLine, ImageOff, Pencil, Trash2 } from 'lucide-react'
 import type { Column } from '@/components/data-table'
 import { Badge, Button } from '@/components/ui'
-import { formatDate } from '@/lib/utils'
 import { EVENT_CATEGORY, EVENT_STATUS } from '../constants'
 import type { CompanyEvent } from '../schema'
-import { getEventPhase, isPublished } from '../utils'
+import { formatEventRange, getEventPhase, isPublished } from '../utils'
 
 interface Actions {
   onEdit: (row: CompanyEvent) => void
@@ -50,11 +49,7 @@ export function getEventColumns({
         const phase = getEventPhase(r)
         return (
           <div className="space-y-1">
-            <div className="text-xs whitespace-nowrap tabular-nums">
-              {formatDate(r.startAt, true)}
-              <span className="text-slate-400"> ～ </span>
-              {formatDate(r.endAt, true)}
-            </div>
+            <div className="text-xs whitespace-nowrap tabular-nums">{formatEventRange(r)}</div>
             <Badge tone={phase.tone}>{phase.label}</Badge>
           </div>
         )
@@ -70,7 +65,9 @@ export function getEventColumns({
     {
       key: 'status',
       header: '上架狀態',
-      render: (r) => <Badge tone={EVENT_STATUS.tone(r.status)}>{EVENT_STATUS.label(r.status)}</Badge>,
+      render: (r) => (
+        <Badge tone={EVENT_STATUS.tone(r.status)}>{EVENT_STATUS.label(r.status)}</Badge>
+      ),
     },
     {
       key: 'actions',

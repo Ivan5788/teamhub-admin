@@ -61,3 +61,45 @@ describe('DataTable 手機版', () => {
     expect(screen.getByRole('button', { name: '清除篩選' })).toBeInTheDocument()
   })
 })
+
+describe('DataTable 依可用寬度切換版型', () => {
+  const renderWithWidth = (width: number) => {
+    vi.stubGlobal('matchMedia', () => ({
+      matches: true, // 螢幕寬度屬於桌面
+      addEventListener: () => {},
+      removeEventListener: () => {},
+    }))
+    vi.stubGlobal(
+      'ResizeObserver',
+      class {
+        observe() {}
+        disconnect() {}
+      },
+    )
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockReturnValue({ width } as DOMRect)
+    render(
+      <DataTable
+        columns={columns}
+        data={[{ id: '1', name: '王小明' }]}
+        rowKey={(r) => r.id}
+        minTableWidth={800}
+      />,
+    )
+  }
+
+  afterEach(() => {
+    vi.unstubAllGlobals()
+    vi.restoreAllMocks()
+  })
+
+  it('螢幕夠寬但容器不足時改用卡片，例如平板或有側邊欄的小筆電', () => {
+    renderWithWidth(700)
+    expect(screen.queryByRole('table')).not.toBeInTheDocument()
+    expect(screen.getByRole('listitem')).toBeInTheDocument()
+  })
+
+  it('容器夠寬時顯示表格', () => {
+    renderWithWidth(960)
+    expect(screen.getByRole('table')).toBeInTheDocument()
+  })
+})

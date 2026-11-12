@@ -62,6 +62,7 @@ export function EventListPage() {
           columns={columns}
           data={data?.items}
           rowKey={(r) => r.id}
+          minTableWidth={890}
           loading={isLoading}
           fetching={isFetching}
           error={isError}

@@ -61,6 +61,7 @@ export function EmployeeListPage() {
           columns={columns}
           data={data?.items}
           rowKey={(r) => r.id}
+          minTableWidth={820}
           loading={isLoading}
           fetching={isFetching}
           error={isError}
