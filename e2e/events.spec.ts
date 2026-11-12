@@ -22,6 +22,18 @@ test.describe('活動管理', () => {
     await expect(dialog.getByText('結束時間需晚於開始時間')).toBeVisible()
   })
 
+  test('模擬伺服器只攔截 API，頁面導覽不經過 Service Worker', async ({ page }) => {
+    await page.goto('/events')
+    await expect(page.getByRole('row', { name: /React 19/ })).toBeVisible()
+
+    // Service Worker 已啟用後再導覽一次：頁面由伺服器直接回應，API 則由模擬伺服器回應
+    const api = page.waitForResponse((r) => r.url().includes('/api/events'))
+    const navigation = await page.goto('/events?status=published')
+    expect(navigation?.fromServiceWorker()).toBe(false)
+    expect((await api).fromServiceWorker()).toBe(true)
+    await expect(page.getByRole('row', { name: /React 19/ })).toBeVisible()
+  })
+
   test('直接開啟子頁面網址不會 404', async ({ page }) => {
     const response = await page.goto('/events?status=published')
     expect(response?.status()).toBe(200)
