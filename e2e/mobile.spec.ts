@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test'
+import { expect, test } from './fixtures'
 
 test.describe('手機版', () => {
   test('列表以卡片呈現，頁面沒有橫向捲動', async ({ page }) => {

@@ -4,6 +4,7 @@ import { PageHeader } from '@/components/layout/PageHeader'
 import { Button, Card, ConfirmDialog, Select, Tabs } from '@/components/ui'
 import { useCrudDialogs } from '@/hooks/useCrudDialogs'
 import { useListState } from '@/hooks/useListState'
+import { useAuth } from '@/lib/auth'
 import { eventHooks, useTogglePublish } from '../api'
 import { EventFormModal } from '../components/EventFormModal'
 import { getEventColumns } from '../components/event-columns'
@@ -18,11 +19,15 @@ export function EventListPage() {
   const removeMutation = eventHooks.useRemove()
   const { toggle } = useTogglePublish()
   const dialogs = useCrudDialogs<CompanyEvent>()
+  const { can } = useAuth()
+  const canCreate = can('events:create')
+  const canUpdate = can('events:update')
 
+  // 依權限決定要顯示哪些操作；API 層也會再檢查一次
   const columns = getEventColumns({
-    onEdit: dialogs.openEdit,
-    onDelete: dialogs.openDelete,
-    onTogglePublish: toggle,
+    onEdit: canUpdate ? dialogs.openEdit : undefined,
+    onDelete: can('events:delete') ? dialogs.openDelete : undefined,
+    onTogglePublish: canUpdate ? toggle : undefined,
   })
 
   return (
@@ -31,10 +36,12 @@ export function EventListPage() {
         title="活動管理"
         description="建立公司活動並控制上架 / 下架，上架後員工即可在前台看到"
         actions={
-          <Button onClick={dialogs.openCreate}>
-            <Plus className="size-4" />
-            新增活動
-          </Button>
+          canCreate && (
+            <Button onClick={dialogs.openCreate}>
+              <Plus className="size-4" />
+              新增活動
+            </Button>
+          )
         }
       />
 
@@ -74,9 +81,11 @@ export function EventListPage() {
                 清除搜尋與篩選
               </Button>
             ) : (
-              <Button size="sm" onClick={dialogs.openCreate}>
-                新增活動
-              </Button>
+              canCreate && (
+                <Button size="sm" onClick={dialogs.openCreate}>
+                  新增活動
+                </Button>
+              )
             )
           }
         />

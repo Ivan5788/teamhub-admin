@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test'
+import { expect, test } from './fixtures'
 
 test.describe('活動管理', () => {
   test('上架立即反映在畫面上，並顯示提示', async ({ page }) => {

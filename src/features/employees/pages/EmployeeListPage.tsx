@@ -4,6 +4,7 @@ import { PageHeader } from '@/components/layout/PageHeader'
 import { Button, Card, ConfirmDialog, Select } from '@/components/ui'
 import { useCrudDialogs } from '@/hooks/useCrudDialogs'
 import { useListState } from '@/hooks/useListState'
+import { useAuth } from '@/lib/auth'
 import { employeeHooks } from '../api'
 import { EmployeeFormModal } from '../components/EmployeeFormModal'
 import { getEmployeeColumns } from '../components/employee-columns'
@@ -19,8 +20,14 @@ export function EmployeeListPage() {
   const { data, isLoading, isFetching, isError, refetch } = employeeHooks.useList(list.params)
   const removeMutation = employeeHooks.useRemove()
   const dialogs = useCrudDialogs<Employee>()
+  const { can } = useAuth()
+  const canCreate = can('employees:create')
 
-  const columns = getEmployeeColumns({ onEdit: dialogs.openEdit, onDelete: dialogs.openDelete })
+  // 依權限決定要顯示哪些操作；API 層也會再檢查一次
+  const columns = getEmployeeColumns({
+    onEdit: can('employees:update') ? dialogs.openEdit : undefined,
+    onDelete: can('employees:delete') ? dialogs.openDelete : undefined,
+  })
 
   return (
     <>
@@ -28,10 +35,12 @@ export function EmployeeListPage() {
         title="人員管理"
         description="管理公司員工基本資料與在職狀態"
         actions={
-          <Button onClick={dialogs.openCreate}>
-            <Plus className="size-4" />
-            新增員工
-          </Button>
+          canCreate && (
+            <Button onClick={dialogs.openCreate}>
+              <Plus className="size-4" />
+              新增員工
+            </Button>
+          )
         }
       />
 
@@ -73,9 +82,11 @@ export function EmployeeListPage() {
                 清除搜尋與篩選
               </Button>
             ) : (
-              <Button size="sm" onClick={dialogs.openCreate}>
-                新增員工
-              </Button>
+              canCreate && (
+                <Button size="sm" onClick={dialogs.openCreate}>
+                  新增員工
+                </Button>
+              )
             )
           }
         />

@@ -1,13 +1,16 @@
 import { useEffect, useState } from 'react'
 import { NavLink, Outlet } from 'react-router'
-import { Building2, Menu, X } from 'lucide-react'
+import { Building2, Eye, Menu, X } from 'lucide-react'
 import { navigation } from '@/config/navigation'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
+import { useAuth } from '@/lib/auth'
 import { cn } from '@/lib/utils'
+import { UserMenu } from './UserMenu'
 
 export function AdminLayout() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const isDesktop = useMediaQuery('(min-width: 64rem)')
+  const { user } = useAuth()
 
   useEffect(() => {
     if (!mobileOpen) return
@@ -79,13 +82,14 @@ export function AdminLayout() {
           >
             <Menu className="size-5 text-slate-600" />
           </button>
-          <div className="ml-auto flex items-center gap-3 text-sm text-slate-600">
-            <span className="hidden sm:inline">管理員</span>
-            <div className="flex size-8 items-center justify-center rounded-full bg-indigo-100 font-medium text-indigo-700">
-              A
-            </div>
-          </div>
+          <UserMenu />
         </header>
+        {user?.role === 'viewer' && (
+          <p className="flex items-center gap-2 border-b border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-800 sm:px-8">
+            <Eye className="size-4 shrink-0" />
+            檢視者模式：可以瀏覽所有資料，但無法新增、編輯或刪除。
+          </p>
+        )}
         <main className="px-4 py-5 sm:px-8 sm:py-6">
           <Outlet />
         </main>

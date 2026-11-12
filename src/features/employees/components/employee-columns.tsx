@@ -5,14 +5,15 @@ import { formatDate } from '@/lib/utils'
 import { DEPARTMENT, EMPLOYEE_STATUS } from '../constants'
 import type { Employee } from '../schema'
 
+/** 沒有權限的操作不傳入，對應按鈕就不會出現；全部都沒有時連操作欄都不顯示 */
 interface Actions {
-  onEdit: (row: Employee) => void
-  onDelete: (row: Employee) => void
+  onEdit?: (row: Employee) => void
+  onDelete?: (row: Employee) => void
 }
 
 /** 表格欄位定義。要調整列表顯示內容，只需要改這個檔案 */
 export function getEmployeeColumns({ onEdit, onDelete }: Actions): Column<Employee>[] {
-  return [
+  const columns: Column<Employee>[] = [
     {
       key: 'name',
       header: '員工',
@@ -31,7 +32,11 @@ export function getEmployeeColumns({ onEdit, onDelete }: Actions): Column<Employ
     },
     { key: 'department', header: '部門', render: (r) => DEPARTMENT.label(r.department) },
     { key: 'title', header: '職稱', render: (r) => r.title },
-    { key: 'phone', header: '手機', render: (r) => <span className="tabular-nums">{r.phone}</span> },
+    {
+      key: 'phone',
+      header: '手機',
+      render: (r) => <span className="tabular-nums">{r.phone}</span>,
+    },
     {
       key: 'status',
       header: '狀態',
@@ -45,6 +50,11 @@ export function getEmployeeColumns({ onEdit, onDelete }: Actions): Column<Employ
       mobile: 'hidden',
       render: (r) => <span className="tabular-nums">{formatDate(r.hireDate)}</span>,
     },
+  ]
+  if (!onEdit && !onDelete) return columns
+
+  return [
+    ...columns,
     {
       key: 'actions',
       header: <span className="sr-only">操作</span>,
@@ -52,18 +62,22 @@ export function getEmployeeColumns({ onEdit, onDelete }: Actions): Column<Employ
       className: 'text-right',
       render: (r) => (
         <div className="flex justify-end gap-1">
-          <Button variant="ghost" size="icon" onClick={() => onEdit(r)} aria-label="編輯">
-            <Pencil className="size-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => onDelete(r)}
-            aria-label="刪除"
-            className="text-red-600 hover:bg-red-50"
-          >
-            <Trash2 className="size-4" />
-          </Button>
+          {onEdit && (
+            <Button variant="ghost" size="icon" onClick={() => onEdit(r)} aria-label="編輯">
+              <Pencil className="size-4" />
+            </Button>
+          )}
+          {onDelete && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => onDelete(r)}
+              aria-label="刪除"
+              className="text-red-600 hover:bg-red-50"
+            >
+              <Trash2 className="size-4" />
+            </Button>
+          )}
         </div>
       ),
     },

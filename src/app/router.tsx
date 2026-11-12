@@ -3,6 +3,7 @@ import { createBrowserRouter } from 'react-router'
 import { AdminLayout } from '@/components/layout/AdminLayout'
 import { NotFoundPage } from './NotFoundPage'
 import { PageLoader } from './PageLoader'
+import { RequireAuth } from './RequireAuth'
 import { RouteErrorPage } from './RouteErrorPage'
 
 /**
@@ -16,26 +17,38 @@ const lazyPage = (load: () => Promise<ComponentType>) => ({
   errorElement: <RouteErrorPage />,
 })
 
-/** 新增頁面：在 children 加一筆，並到 config/navigation.ts 加選單 */
+/**
+ * 新增頁面：在 AdminLayout 的 children 加一筆，並到 config/navigation.ts 加選單。
+ * RequireAuth 底下的頁面都需要登入，未登入會導向 /login 並記住原本的網址。
+ */
 export const router = createBrowserRouter([
   {
-    path: '/',
-    element: <AdminLayout />,
+    path: '/login',
+    ...lazyPage(() => import('@/features/auth').then((m) => m.LoginPage)),
+  },
+  {
+    element: <RequireAuth />,
     errorElement: <RouteErrorPage />,
     children: [
       {
-        index: true,
-        ...lazyPage(() => import('@/features/dashboard').then((m) => m.DashboardPage)),
+        path: '/',
+        element: <AdminLayout />,
+        children: [
+          {
+            index: true,
+            ...lazyPage(() => import('@/features/dashboard').then((m) => m.DashboardPage)),
+          },
+          {
+            path: 'employees',
+            ...lazyPage(() => import('@/features/employees').then((m) => m.EmployeeListPage)),
+          },
+          {
+            path: 'events',
+            ...lazyPage(() => import('@/features/events').then((m) => m.EventListPage)),
+          },
+          { path: '*', element: <NotFoundPage /> },
+        ],
       },
-      {
-        path: 'employees',
-        ...lazyPage(() => import('@/features/employees').then((m) => m.EmployeeListPage)),
-      },
-      {
-        path: 'events',
-        ...lazyPage(() => import('@/features/events').then((m) => m.EventListPage)),
-      },
-      { path: '*', element: <NotFoundPage /> },
     ],
   },
 ])

@@ -1,3 +1,4 @@
+import { authorize } from '@/lib/auth/guard'
 import type { BaseEntity, ListParams, Paginated, ResourceApi } from './types'
 
 interface MockOptions<T extends BaseEntity> {
@@ -15,7 +16,8 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
 /**
  * 以 localStorage 模擬後端，讓前端在沒有 API 時也能完整開發。
- * 行為刻意貼近真實後端：非同步、會丟錯、回傳分頁格式。
+ * 行為刻意貼近真實後端：非同步、會丟錯、回傳分頁格式，並檢查登入與權限（401 / 403）。
+ * storageKey 同時作為權限檢查的資源名稱，例如 employees → employees:delete。
  */
 export function createMockApi<T extends BaseEntity>({
   storageKey,
@@ -44,6 +46,7 @@ export function createMockApi<T extends BaseEntity>({
   return {
     async list({ page, pageSize, keyword, filters }: ListParams): Promise<Paginated<T>> {
       await sleep(latency)
+      authorize(storageKey, 'read')
       let rows = read()
 
       if (keyword?.trim()) {
@@ -67,12 +70,14 @@ export function createMockApi<T extends BaseEntity>({
 
     async get(id) {
       await sleep(latency)
+      authorize(storageKey, 'read')
       const rows = read()
       return rows[findIndexOrThrow(rows, id)]
     },
 
     async create(input) {
       await sleep(latency)
+      authorize(storageKey, 'create')
       const now = new Date().toISOString()
       const entity = { ...input, id: crypto.randomUUID(), createdAt: now, updatedAt: now } as T
       write([entity, ...read()])
@@ -81,6 +86,7 @@ export function createMockApi<T extends BaseEntity>({
 
     async update(id, input) {
       await sleep(latency)
+      authorize(storageKey, 'update')
       const rows = read()
       const index = findIndexOrThrow(rows, id)
       const updated = { ...rows[index], ...input, updatedAt: new Date().toISOString() }
@@ -91,6 +97,7 @@ export function createMockApi<T extends BaseEntity>({
 
     async remove(id) {
       await sleep(latency)
+      authorize(storageKey, 'delete')
       const rows = read()
       rows.splice(findIndexOrThrow(rows, id), 1)
       write(rows)

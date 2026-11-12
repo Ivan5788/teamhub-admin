@@ -73,10 +73,12 @@ GET    /employees/:id     → Employee
 POST   /employees         → Employee
 PATCH  /employees/:id     → Employee
 DELETE /employees/:id     → 204
+POST   /auth/login        { email, password } → { token, user: { id, name, email, role }, expiresAt }
 錯誤回應 → { message: string }（會直接顯示在 toast）
+未登入 → 401（前端會自動登出並導回登入頁）；權限不足 → 403
 ```
 
-3. 需要帶 token 時，修改 `src/lib/api/http.ts` 的 headers。
+3. 所有請求會自動帶上 `Authorization: Bearer <token>`（`src/lib/api/http.ts`）。後端必須自己檢查權限，前端隱藏按鈕只是體驗，不能當作安全防線。
 
 ---
 
@@ -138,6 +140,9 @@ export const announcementHooks = createResourceHooks('announcements', announceme
 | 調整手機卡片的呈現 | 欄位設定的 `mobile`：`title`、`wide`、`actions`、`hidden` |
 | 表格在某些寬度被擠壓 | 列表頁 `<DataTable minTableWidth={...}>`，可用寬度不足時改用卡片 |
 | 需要即時回饋的更新（例如切換開關） | `xxxHooks.useUpdate({ optimistic: true })` |
+| 依權限顯示按鈕 | `const { can } = useAuth()`，`can('announcements:delete') && <Button />` |
+| 新增角色或調整權限 | `src/lib/auth/permissions.ts` 的 `ROLE` 與 `ROLE_PERMISSIONS` |
+| 測試中切換角色 | 單元測試 `loginAs('viewer')`（`src/test/auth.ts`，預設為管理員）；E2E `test.use({ role: 'viewer' })` |
 | 新增端對端測試 | `e2e/*.spec.ts`，手機情境放在 `mobile.spec.ts` |
 | 加一個篩選條件 | 列表頁 `useListState({ filterKeys: [...] })` + `<TableToolbar>` 裡放 `<Select>` |
 | 新增狀態選項 / 改顏色 | `constants.ts` |

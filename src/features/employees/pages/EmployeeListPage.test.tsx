@@ -3,6 +3,7 @@ import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { describe, expect, it, vi } from 'vitest'
+import { loginAs } from '@/test/auth'
 import { employeeApi } from '../api'
 import { employeeSeed } from '../mock-data'
 import { EmployeeListPage } from './EmployeeListPage'
@@ -61,5 +62,29 @@ describe('EmployeeListPage', () => {
     expect(await screen.findByText('第 1–10 筆，共 10 筆', {}, SLOW)).toBeInTheDocument()
     expect(await screen.findByText('員工0', {}, SLOW)).toBeInTheDocument()
     expect(router.state.location.search).toBe('')
+  })
+})
+
+describe('EmployeeListPage 角色權限', () => {
+  it('檢視者看不到新增、編輯、刪除', async () => {
+    loginAs('viewer')
+    seedEmployees(1)
+    renderPage()
+
+    expect(await screen.findByText('員工0', {}, SLOW)).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '新增員工' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '編輯' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '刪除' })).not.toBeInTheDocument()
+  })
+
+  it('編輯者可以新增與編輯，但不能刪除', async () => {
+    loginAs('editor')
+    seedEmployees(1)
+    renderPage()
+
+    expect(await screen.findByText('員工0', {}, SLOW)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '新增員工' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '編輯' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '刪除' })).not.toBeInTheDocument()
   })
 })

@@ -5,10 +5,11 @@ import { EVENT_CATEGORY, EVENT_STATUS } from '../constants'
 import type { CompanyEvent } from '../schema'
 import { formatEventRange, getEventPhase, isPublished } from '../utils'
 
+/** 沒有權限的操作不傳入，對應按鈕就不會出現；全部都沒有時連操作欄都不顯示 */
 interface Actions {
-  onEdit: (row: CompanyEvent) => void
-  onDelete: (row: CompanyEvent) => void
-  onTogglePublish: (row: CompanyEvent) => void
+  onEdit?: (row: CompanyEvent) => void
+  onDelete?: (row: CompanyEvent) => void
+  onTogglePublish?: (row: CompanyEvent) => void
 }
 
 export function getEventColumns({
@@ -16,7 +17,7 @@ export function getEventColumns({
   onDelete,
   onTogglePublish,
 }: Actions): Column<CompanyEvent>[] {
-  return [
+  const columns: Column<CompanyEvent>[] = [
     {
       key: 'title',
       header: '活動',
@@ -69,6 +70,11 @@ export function getEventColumns({
         <Badge tone={EVENT_STATUS.tone(r.status)}>{EVENT_STATUS.label(r.status)}</Badge>
       ),
     },
+  ]
+  if (!onTogglePublish && !onEdit && !onDelete) return columns
+
+  return [
+    ...columns,
     {
       key: 'actions',
       header: <span className="sr-only">操作</span>,
@@ -76,35 +82,41 @@ export function getEventColumns({
       className: 'text-right',
       render: (r) => (
         <div className="flex items-center justify-end gap-1">
-          <Button
-            variant={isPublished(r) ? 'secondary' : 'primary'}
-            size="sm"
-            onClick={() => onTogglePublish(r)}
-          >
-            {isPublished(r) ? (
-              <>
-                <ArrowDownToLine className="size-4" />
-                下架
-              </>
-            ) : (
-              <>
-                <ArrowUpFromLine className="size-4" />
-                上架
-              </>
-            )}
-          </Button>
-          <Button variant="ghost" size="icon" onClick={() => onEdit(r)} aria-label="編輯">
-            <Pencil className="size-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => onDelete(r)}
-            aria-label="刪除"
-            className="text-red-600 hover:bg-red-50"
-          >
-            <Trash2 className="size-4" />
-          </Button>
+          {onTogglePublish && (
+            <Button
+              variant={isPublished(r) ? 'secondary' : 'primary'}
+              size="sm"
+              onClick={() => onTogglePublish(r)}
+            >
+              {isPublished(r) ? (
+                <>
+                  <ArrowDownToLine className="size-4" />
+                  下架
+                </>
+              ) : (
+                <>
+                  <ArrowUpFromLine className="size-4" />
+                  上架
+                </>
+              )}
+            </Button>
+          )}
+          {onEdit && (
+            <Button variant="ghost" size="icon" onClick={() => onEdit(r)} aria-label="編輯">
+              <Pencil className="size-4" />
+            </Button>
+          )}
+          {onDelete && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => onDelete(r)}
+              aria-label="刪除"
+              className="text-red-600 hover:bg-red-50"
+            >
+              <Trash2 className="size-4" />
+            </Button>
+          )}
         </div>
       ),
     },

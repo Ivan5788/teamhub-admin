@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test'
+import { expect, test } from './fixtures'
 
 test.describe('人員管理', () => {
   test('新增員工：即時驗證，成功後出現在列表', async ({ page }) => {
