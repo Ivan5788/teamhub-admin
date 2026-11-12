@@ -49,7 +49,11 @@ export function createMockApi<T extends BaseEntity>({
       if (keyword?.trim()) {
         const kw = keyword.trim().toLowerCase()
         rows = rows.filter((row) =>
-          searchFields.some((f) => String(row[f] ?? '').toLowerCase().includes(kw)),
+          searchFields.some((f) =>
+            String(row[f] ?? '')
+              .toLowerCase()
+              .includes(kw),
+          ),
         )
       }
       for (const [field, value] of Object.entries(filters ?? {})) {

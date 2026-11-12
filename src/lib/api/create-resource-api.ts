@@ -16,7 +16,5 @@ export function createResourceApi<T extends BaseEntity>({
   resource,
   mock,
 }: Options<T>): ResourceApi<T> {
-  return USE_MOCK
-    ? createMockApi<T>({ storageKey: resource, ...mock })
-    : createHttpApi<T>(resource)
+  return USE_MOCK ? createMockApi<T>({ storageKey: resource, ...mock }) : createHttpApi<T>(resource)
 }

@@ -1,5 +1,5 @@
 import type { BadgeTone } from '@/components/ui'
-import { formatDate } from '@/lib/utils'
+import { formatDate, formatTime } from '@/lib/utils'
 import type { CompanyEvent } from './schema'
 
 export interface EventPhase {
@@ -24,10 +24,10 @@ export function getEventPhase(event: CompanyEvent, now = new Date()): EventPhase
  */
 export function formatEventRange(event: Pick<CompanyEvent, 'startAt' | 'endAt'>) {
   const start = formatDate(event.startAt, true)
-  const end = formatDate(event.endAt, true)
-  const [startDay] = start.split(' ')
-  const [endDay, endTime] = end.split(' ')
-  return startDay === endDay ? `${start} – ${endTime}` : `${start} ～ ${end}`
+  const sameDay = formatDate(event.startAt) === formatDate(event.endAt)
+  return sameDay
+    ? `${start} – ${formatTime(event.endAt)}`
+    : `${start} ～ ${formatDate(event.endAt, true)}`
 }
 
 export const isPublished = (event: CompanyEvent) => event.status === 'published'
