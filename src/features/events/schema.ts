@@ -28,4 +28,15 @@ export const eventFormSchema = eventFields.refine((d) => new Date(d.endAt) > new
 })
 
 export type EventFormValues = z.infer<typeof eventFormSchema>
-export type CompanyEvent = BaseEntity & EventFormValues
+export type CompanyEvent = BaseEntity &
+  EventFormValues & {
+    /** 已報名人數，由伺服器計算後附在回應中（唯讀，不在表單裡） */
+    registeredCount?: number
+  }
+
+/** 員工報名紀錄。employee 是伺服器回應時附上的員工摘要，方便列表直接顯示 */
+export interface Registration extends BaseEntity {
+  eventId: string
+  employeeId: string
+  employee?: { name: string; email: string; department: string }
+}

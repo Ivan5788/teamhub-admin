@@ -4,15 +4,19 @@ import { Badge, Button } from '@/components/ui'
 import { EVENT_CATEGORY, EVENT_STATUS } from '../constants'
 import type { CompanyEvent } from '../schema'
 import { formatEventRange, getEventPhase, isPublished } from '../utils'
+import { RegistrationCount } from './RegistrationCount'
 
 /** 沒有權限的操作不傳入，對應按鈕就不會出現；全部都沒有時連操作欄都不顯示 */
 interface Actions {
+  /** 查看報名名單：所有角色都能看，所以是必填 */
+  onOpenRegistrations: (row: CompanyEvent) => void
   onEdit?: (row: CompanyEvent) => void
   onDelete?: (row: CompanyEvent) => void
   onTogglePublish?: (row: CompanyEvent) => void
 }
 
 export function getEventColumns({
+  onOpenRegistrations,
   onEdit,
   onDelete,
   onTogglePublish,
@@ -62,7 +66,11 @@ export function getEventColumns({
       mobile: 'wide',
       render: (r) => <span className="line-clamp-2 max-w-48">{r.location}</span>,
     },
-    { key: 'capacity', header: '人數上限', render: (r) => `${r.capacity} 人` },
+    {
+      key: 'registrations',
+      header: '報名 / 名額',
+      render: (r) => <RegistrationCount event={r} onOpen={onOpenRegistrations} />,
+    },
     {
       key: 'status',
       header: '上架狀態',

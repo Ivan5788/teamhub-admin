@@ -21,6 +21,8 @@ export interface MockResource<T extends BaseEntity = BaseEntity> {
   searchFields: (keyof T)[]
   /** 新增前的商業規則檢查（例如名額已滿），不通過時丟出 MockHttpError */
   beforeCreate?: (input: Partial<T>, db: MockDb) => void
+  /** 修改前的商業規則檢查（例如人數上限不能少於已報名人數） */
+  beforeUpdate?: (current: T, changes: Partial<T>, db: MockDb) => void
   /** 回應前補上計算欄位（例如報名人數），不會寫回資料表 */
   decorate?: (row: T, db: MockDb) => T
 }
@@ -55,9 +57,11 @@ export const db: MockDb = {
       all() {
         const raw = localStorage.getItem(key)
         if (raw) return JSON.parse(raw) as T[]
-        const seed = (registry.get(name)?.seed ?? []) as T[]
-        localStorage.setItem(key, JSON.stringify(seed))
-        return [...seed]
+        const resource = registry.get(name)
+        // 資源尚未註冊時不寫入，避免之後註冊的初始資料被空陣列蓋掉
+        if (!resource) return []
+        localStorage.setItem(key, JSON.stringify(resource.seed))
+        return [...(resource.seed as T[])]
       },
       save(rows) {
         localStorage.setItem(key, JSON.stringify(rows))

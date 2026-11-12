@@ -31,3 +31,32 @@ export function formatEventRange(event: Pick<CompanyEvent, 'startAt' | 'endAt'>)
 }
 
 export const isPublished = (event: CompanyEvent) => event.status === 'published'
+
+export interface RegistrationState {
+  key: 'open' | 'full' | 'ended' | 'unpublished'
+  label: string
+  tone: BadgeTone
+  /** 不能報名時的原因，同時作為伺服器拒絕時的錯誤訊息 */
+  reason?: string
+}
+
+/**
+ * 報名狀態。前端用來決定是否顯示報名操作，模擬伺服器也用同一份規則檢查，
+ * 確保畫面提示與伺服器回應的錯誤訊息一致。
+ */
+export function getRegistrationState(
+  event: CompanyEvent,
+  registeredCount = event.registeredCount ?? 0,
+  now = new Date(),
+): RegistrationState {
+  if (!isPublished(event)) {
+    return { key: 'unpublished', label: '未開放', tone: 'gray', reason: '活動尚未上架，無法報名' }
+  }
+  if (getEventPhase(event, now).key === 'ended') {
+    return { key: 'ended', label: '已結束', tone: 'gray', reason: '活動已結束，無法報名' }
+  }
+  if (registeredCount >= event.capacity) {
+    return { key: 'full', label: '已額滿', tone: 'red', reason: '名額已滿' }
+  }
+  return { key: 'open', label: '報名中', tone: 'green' }
+}

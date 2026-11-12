@@ -141,12 +141,13 @@ export const handlers = [
   http.patch(path('/:resource/:id'), ({ request, params }) =>
     respond(async () => {
       const name = String(params.resource)
-      const { table, output, indexOf } = resourceOf(name)
+      const { resource, table, output, indexOf } = resourceOf(name)
       authorize(request, name, 'update')
       const input = (await request.json()) as Partial<BaseEntity>
       const rows = table.all()
       const index = indexOf(rows, String(params.id))
       const { id: _id, createdAt: _createdAt, ...changes } = input
+      resource.beforeUpdate?.(rows[index], changes, db)
       rows[index] = { ...rows[index], ...changes, updatedAt: new Date().toISOString() }
       table.save(rows)
       return HttpResponse.json(output(rows[index]))

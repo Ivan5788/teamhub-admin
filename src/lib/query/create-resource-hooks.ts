@@ -3,10 +3,18 @@ import {
   useMutation,
   useQuery,
   useQueryClient,
+  type QueryClient,
   type QueryKey,
 } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import type { BaseEntity, EntityInput, ListParams, Paginated, ResourceApi } from '@/lib/api'
+
+interface HookOptions {
+  /** 這個資源異動後，也要一起刷新的其他資源（例如新增報名後，活動列表的報名人數要更新） */
+  invalidates?: string[]
+  /** 自訂成功提示，預設為「已新增／已更新／已刪除 + label」 */
+  messages?: { create?: string; update?: string; remove?: string }
+}
 
 /**
  * 依 ResourceApi 產生一組 React Query hooks。
@@ -19,6 +27,7 @@ export function createResourceHooks<T extends BaseEntity>(
   resource: string,
   api: ResourceApi<T>,
   label: string,
+  { invalidates = [], messages = {} }: HookOptions = {},
 ) {
   const keys = {
     all: [resource] as const,
@@ -27,11 +36,15 @@ export function createResourceHooks<T extends BaseEntity>(
   }
 
   const onError = (err: Error) => toast.error(err.message)
+  const invalidateAll = (qc: QueryClient) =>
+    Promise.all([resource, ...invalidates].map((key) => qc.invalidateQueries({ queryKey: [key] })))
 
-  function useList(params: ListParams) {
+  /** enabled: false 時暫不發出請求，例如只有在需要時才載入下拉選單資料 */
+  function useList(params: ListParams, { enabled = true }: { enabled?: boolean } = {}) {
     return useQuery({
       queryKey: keys.list(params),
       queryFn: () => api.list(params),
+      enabled,
       // 換頁 / 搜尋時保留舊資料，避免表格閃爍
       placeholderData: keepPreviousData,
     })
@@ -50,8 +63,8 @@ export function createResourceHooks<T extends BaseEntity>(
     return useMutation({
       mutationFn: (input: EntityInput<T>) => api.create(input),
       onSuccess: () => {
-        qc.invalidateQueries({ queryKey: keys.all })
-        toast.success(`已新增${label}`)
+        invalidateAll(qc)
+        toast.success(messages.create ?? `已新增${label}`)
       },
       onError,
     })
@@ -84,14 +97,14 @@ export function createResourceHooks<T extends BaseEntity>(
           }
         : undefined,
       onSuccess: (_data, vars) => {
-        toast.success(vars.successMessage ?? `已更新${label}`)
+        toast.success(vars.successMessage ?? messages.update ?? `已更新${label}`)
       },
       onError: (err, _vars, context) => {
         context?.snapshot.forEach(([key, data]) => qc.setQueryData(key, data))
         onError(err)
       },
       // 成功或失敗都重新抓一次，確保與伺服器一致（例如篩選條件下該筆資料應該消失）
-      onSettled: () => qc.invalidateQueries({ queryKey: keys.all }),
+      onSettled: () => invalidateAll(qc),
     })
   }
 
@@ -100,8 +113,8 @@ export function createResourceHooks<T extends BaseEntity>(
     return useMutation({
       mutationFn: (id: string) => api.remove(id),
       onSuccess: () => {
-        qc.invalidateQueries({ queryKey: keys.all })
-        toast.success(`已刪除${label}`)
+        invalidateAll(qc)
+        toast.success(messages.remove ?? `已刪除${label}`)
       },
       onError,
     })

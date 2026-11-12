@@ -61,6 +61,9 @@ export function DashboardPage() {
                 <div className="text-xs text-slate-500">
                   {formatDate(e.startAt, true)} · {e.location}
                 </div>
+                <div className="mt-0.5 text-xs text-slate-500 tabular-nums">
+                  已報名 {e.registeredCount ?? 0} / {e.capacity} 人
+                </div>
               </div>
               <Badge tone={EVENT_CATEGORY.tone(e.category)}>
                 {EVENT_CATEGORY.label(e.category)}

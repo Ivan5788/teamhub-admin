@@ -1,4 +1,4 @@
-import type { CompanyEvent } from './schema'
+import type { CompanyEvent, Registration } from './schema'
 
 const DAY = 86_400_000
 
@@ -40,7 +40,7 @@ const raw: Omit<CompanyEvent, 'id' | 'createdAt' | 'updatedAt'>[] = [
     description: '公司制度、資安規範與各部門介紹。',
     location: '總部 8F 訓練教室',
     ...at(3, 9, 8),
-    capacity: 30,
+    capacity: 5,
     coverUrl: '',
     status: 'published',
   },
@@ -90,3 +90,23 @@ export const eventSeed: CompanyEvent[] = raw.map((e, i) => {
   const createdAt = new Date(Date.now() - i * DAY).toISOString()
   return { ...e, id: `evt-${i + 1}`, createdAt, updatedAt: createdAt }
 })
+
+/** 報名資料：React 19 分享會有人報名、新進人員訓練已額滿（5/5），示範不同狀態 */
+const registrations: [eventId: string, employeeIds: number[]][] = [
+  ['evt-2', [1, 2, 3, 5, 9, 10]],
+  ['evt-3', [6, 8, 11, 13, 1]],
+  ['evt-4', [2, 9]],
+]
+
+export const registrationSeed: Registration[] = registrations.flatMap(([eventId, employees]) =>
+  employees.map((n, i) => {
+    const createdAt = new Date(Date.now() - (i + 1) * 3_600_000).toISOString()
+    return {
+      id: `reg-${eventId}-${n}`,
+      eventId,
+      employeeId: `emp-${n}`,
+      createdAt,
+      updatedAt: createdAt,
+    }
+  }),
+)

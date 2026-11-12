@@ -156,6 +156,8 @@ export const announcementHooks = createResourceHooks('announcements', announceme
 | 依權限顯示按鈕 | `const { can } = useAuth()`，`can('announcements:delete') && <Button />` |
 | 新增角色或調整權限 | `src/lib/auth/permissions.ts` 的 `ROLE` 與 `ROLE_PERMISSIONS` |
 | 測試中切換角色 | 單元測試 `loginAs('viewer')`（`src/test/auth.ts`，預設為管理員）；E2E `test.use({ role: 'viewer' })` |
+| 一個資源異動後要刷新其他資源 | `createResourceHooks(..., { invalidates: ['events'] })` |
+| 伺服器端的商業規則 | `createResourceApi({ mock: { beforeCreate, beforeUpdate } })`，丟出 `MockHttpError(409, '原因')`；真實後端也必須實作同樣的規則 |
 | 新增端對端測試 | `e2e/*.spec.ts`，手機情境放在 `mobile.spec.ts` |
 | 加一個篩選條件 | 列表頁 `useListState({ filterKeys: [...] })` + `<TableToolbar>` 裡放 `<Select>` |
 | 新增狀態選項 / 改顏色 | `constants.ts` |

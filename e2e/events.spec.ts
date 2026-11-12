@@ -29,3 +29,32 @@ test.describe('活動管理', () => {
     await expect(page).toHaveTitle('活動管理｜TeamHub')
   })
 })
+
+test.describe('活動報名', () => {
+  test('加入報名後，名單與列表上的人數都會更新', async ({ page }) => {
+    await page.goto('/events')
+    const row = page.getByRole('row', { name: /React 19/ })
+    await row.getByRole('button', { name: /查看「React 19 新功能分享會」報名名單/ }).click()
+
+    const dialog = page.getByRole('dialog', { name: /報名名單/ })
+    await expect(dialog.getByText('6 / 50 人')).toBeVisible()
+    await dialog
+      .getByRole('combobox', { name: '選擇要報名的員工' })
+      .selectOption({ label: '黃淑芬（人資部）' })
+    await dialog.getByRole('button', { name: '加入報名' }).click()
+
+    await expect(page.getByText('已加入報名')).toBeVisible()
+    await expect(dialog.getByText('7 / 50 人')).toBeVisible()
+    await page.keyboard.press('Escape')
+    await expect(row).toContainText('7 / 50 人')
+  })
+
+  test('額滿的活動顯示原因，不能再報名', async ({ page }) => {
+    await page.goto('/events')
+    await page.getByRole('button', { name: /查看「新進人員教育訓練」報名名單/ }).click()
+    const dialog = page.getByRole('dialog')
+    await expect(dialog.getByText('已額滿')).toBeVisible()
+    await expect(dialog.getByText('名額已滿，目前無法新增報名。')).toBeVisible()
+    await expect(dialog.getByRole('button', { name: '加入報名' })).toHaveCount(0)
+  })
+})

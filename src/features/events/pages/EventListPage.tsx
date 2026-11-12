@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Plus } from 'lucide-react'
 import { DataTable, Pagination, TableToolbar } from '@/components/data-table'
 import { PageHeader } from '@/components/layout/PageHeader'
@@ -7,6 +8,7 @@ import { useListState } from '@/hooks/useListState'
 import { useAuth } from '@/lib/auth'
 import { eventHooks, useTogglePublish } from '../api'
 import { EventFormModal } from '../components/EventFormModal'
+import { RegistrationModal } from '../components/RegistrationModal'
 import { getEventColumns } from '../components/event-columns'
 import { EVENT_CATEGORY, EVENT_STATUS } from '../constants'
 import type { CompanyEvent } from '../schema'
@@ -20,11 +22,13 @@ export function EventListPage() {
   const { toggle } = useTogglePublish()
   const dialogs = useCrudDialogs<CompanyEvent>()
   const { can } = useAuth()
+  const [viewingRegistrations, setViewingRegistrations] = useState<CompanyEvent | null>(null)
   const canCreate = can('events:create')
   const canUpdate = can('events:update')
 
   // 依權限決定要顯示哪些操作；API 層也會再檢查一次
   const columns = getEventColumns({
+    onOpenRegistrations: setViewingRegistrations,
     onEdit: canUpdate ? dialogs.openEdit : undefined,
     onDelete: can('events:delete') ? dialogs.openDelete : undefined,
     onTogglePublish: canUpdate ? toggle : undefined,
@@ -69,7 +73,7 @@ export function EventListPage() {
           columns={columns}
           data={data?.items}
           rowKey={(r) => r.id}
-          minTableWidth={890}
+          minTableWidth={930}
           loading={isLoading}
           fetching={isFetching}
           error={isError}
@@ -98,6 +102,13 @@ export function EventListPage() {
       </Card>
 
       {dialogs.formOpen && <EventFormModal event={dialogs.editing} onClose={dialogs.closeForm} />}
+
+      {viewingRegistrations && (
+        <RegistrationModal
+          event={viewingRegistrations}
+          onClose={() => setViewingRegistrations(null)}
+        />
+      )}
 
       <ConfirmDialog
         open={!!dialogs.deleting}
