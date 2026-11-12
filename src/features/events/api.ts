@@ -12,10 +12,11 @@ export const eventHooks = createResourceHooks('events', eventApi, '活動')
 
 /**
  * 模組專屬的 hook 範例：在通用 CRUD 之上包裝業務動作。
+ * 採樂觀更新：按下後立刻切換狀態，失敗才還原並提示。
  * 若後端提供專用 API（例如 POST /events/:id/publish），只要改這裡的實作。
  */
 export function useTogglePublish() {
-  const update = eventHooks.useUpdate()
+  const update = eventHooks.useUpdate({ optimistic: true })
   return {
     ...update,
     toggle: (event: CompanyEvent) => {

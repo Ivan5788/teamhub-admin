@@ -1,6 +1,12 @@
-import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+  type QueryKey,
+} from '@tanstack/react-query'
 import { toast } from 'sonner'
-import type { BaseEntity, EntityInput, ListParams, ResourceApi } from '@/lib/api'
+import type { BaseEntity, EntityInput, ListParams, Paginated, ResourceApi } from '@/lib/api'
 
 /**
  * 依 ResourceApi 產生一組 React Query hooks。
@@ -51,17 +57,41 @@ export function createResourceHooks<T extends BaseEntity>(
     })
   }
 
-  /** successMessage 可自訂，例如「活動已上架」 */
-  function useUpdate() {
+  type UpdateVars = { id: string; input: Partial<EntityInput<T>>; successMessage?: string }
+  type Snapshot = [QueryKey, unknown][]
+
+  /**
+   * successMessage 可自訂，例如「活動已上架」。
+   * optimistic: true 時先更新畫面上的快取，不等 API 回應；失敗則還原並提示。
+   * 適合結果幾乎一定成功、且使用者期待立即回饋的操作（例如上架切換），表單送出則不建議使用。
+   */
+  function useUpdate({ optimistic = false }: { optimistic?: boolean } = {}) {
     const qc = useQueryClient()
-    return useMutation({
-      mutationFn: (vars: { id: string; input: Partial<EntityInput<T>>; successMessage?: string }) =>
-        api.update(vars.id, vars.input),
+    return useMutation<T, Error, UpdateVars, { snapshot: Snapshot }>({
+      mutationFn: (vars) => api.update(vars.id, vars.input),
+      onMutate: optimistic
+        ? async ({ id, input }) => {
+            // 取消進行中的查詢，避免舊的回應蓋掉剛套用的樂觀結果
+            await qc.cancelQueries({ queryKey: keys.all })
+            const snapshot = qc.getQueriesData({ queryKey: keys.all })
+            const patch = (row: T) => (row.id === id ? { ...row, ...input } : row)
+            qc.setQueriesData<Paginated<T>>(
+              { queryKey: [resource, 'list'] },
+              (old) => old && { ...old, items: old.items.map(patch) },
+            )
+            qc.setQueryData<T>(keys.detail(id), (old) => old && patch(old))
+            return { snapshot }
+          }
+        : undefined,
       onSuccess: (_data, vars) => {
-        qc.invalidateQueries({ queryKey: keys.all })
         toast.success(vars.successMessage ?? `已更新${label}`)
       },
-      onError,
+      onError: (err, _vars, context) => {
+        context?.snapshot.forEach(([key, data]) => qc.setQueryData(key, data))
+        onError(err)
+      },
+      // 成功或失敗都重新抓一次，確保與伺服器一致（例如篩選條件下該筆資料應該消失）
+      onSettled: () => qc.invalidateQueries({ queryKey: keys.all }),
     })
   }
 
