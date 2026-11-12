@@ -14,7 +14,8 @@ src/
 │   └── layout/             # 後台版面、頁首
 ├── hooks/                  # 跨模組共用的 hooks
 ├── lib/
-│   ├── api/                # API 層：mock / 真實後端切換
+│   ├── api/                # API 層：fetch 封裝、資源 API 工廠、mock/（MSW 模擬伺服器）
+│   ├── auth/               # 登入狀態、角色與權限
 │   ├── query/              # React Query 共用設定與 hooks 工廠
 │   ├── options.ts          # 狀態/類別列舉的定義工具
 │   └── utils.ts            # cn()、日期格式化
@@ -30,7 +31,7 @@ src/
 features/employees/
 ├── constants.ts            # 狀態、部門等選項（label、顏色）
 ├── schema.ts               # Zod 驗證規則 + TypeScript 型別
-├── mock-data.ts            # 假資料
+├── mock-data.ts            # 模擬伺服器的初始資料
 ├── api.ts                  # API 與 React Query hooks（通常 10 行就夠）
 ├── components/
 │   ├── EmployeeFormModal.tsx   # 新增 / 編輯表單
@@ -57,9 +58,21 @@ features/employees/
 lib/query/create-resource-hooks.ts      ← React Query 包裝
   ▼
 ResourceApi（list / get / create / update / remove）
-  ├─ mock-api.ts   ← VITE_USE_MOCK 不是 false 時（預設）
-  └─ http-api.ts   ← VITE_USE_MOCK=false 時，打 RESTful API
+  ▼
+lib/api/http.ts                         ← fetch 封裝（token、錯誤格式、401 自動登出）
+  ▼
+HTTP 請求
+  ├─ Demo（預設）：lib/api/mock/handlers.ts 由 MSW 攔截並模擬伺服器
+  └─ VITE_USE_MOCK=false：送到真實後端
 ```
+
+模擬伺服器的資料與規則寫在各模組的 `createResourceApi({ mock })`：
+
+- `seed`、`searchFields`：初始資料與關鍵字搜尋欄位
+- `beforeCreate(input, db)`：新增前的商業規則，不通過時 `throw new MockHttpError(409, '名額已滿')`
+- `decorate(row, db)`：回應前補上計算欄位，例如報名人數
+
+測試要模擬特殊回應時，用 `mockServer.use(http.get(...))` 暫時覆蓋 handler（每個測試結束後自動還原）。
 
 ### 串接真實後端
 

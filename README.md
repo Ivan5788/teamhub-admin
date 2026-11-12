@@ -50,9 +50,18 @@
 
 1. **路由守衛**：未登入或登入過期時導向登入頁，並記住原本的網址；`redirect` 參數只接受站內路徑，防止開放式重新導向。
 2. **畫面**：`useAuth().can('employees:delete')` 決定按鈕是否出現；檢視者會看到唯讀提示。
-3. **API 層**：mock API 模擬後端，未登入回 401、權限不足回 403。即使繞過畫面直接呼叫 API 也會被擋下；串接真實後端時，401 會自動登出並導回登入頁。
+3. **API 層**：MSW 模擬伺服器檢查 `Authorization` header，未登入回 401、權限不足回 403。即使繞過畫面直接呼叫 API 也會被擋下；串接真實後端時，401 會自動登出並導回登入頁。
 
 登入狀態用 `useSyncExternalStore` 訂閱，其他分頁登出時這個分頁也會同步登出；登出時清空資料快取，換帳號不會看到上一位使用者的資料。
+
+### 用 MSW 在網路層模擬後端
+
+Demo 不需要後端，但前端程式碼**沒有任何「假資料分支」**：所有請求都是真的 `fetch`，由 MSW（Mock Service Worker）在網路層攔截並回應。所以：
+
+- 從 Demo 切換到真實後端只要改一個環境變數，頁面、hooks、API 層都不用動。
+- 模擬伺服器的行為貼近真實後端：RESTful 路由、分頁與篩選、Bearer token 驗證、401／403、404、409（商業規則衝突）、網路延遲。
+- 可以在 Console 設定 `mock:errorRate` 讓請求隨機失敗、`mock:latency` 調整延遲，實際檢查錯誤處理與 loading 狀態。
+- 單元測試（Node）與瀏覽器 Demo 共用同一套 handlers，測試走的是和使用者一樣的 HTTP 路徑。
 
 ### 新增一個 CRUD 模組只要約 10 行 API 程式碼
 
@@ -116,6 +125,7 @@ export const eventHooks = createResourceHooks('events', eventApi, '活動')
 | 樣式 | Tailwind CSS v4 | 設計 token 集中在 `@theme`，響應式與狀態樣式寫在元件旁 |
 | Lint | Oxlint | typescript-eslint 尚未支援 TypeScript 7；Oxlint 速度快，且足以表達模組邊界規則 |
 | 測試 | Vitest + Testing Library | 以使用者操作的角度測試元件，不測實作細節 |
+| API 模擬 | MSW | 在網路層攔截請求，前端程式碼與串接真實後端時完全相同；測試與 Demo 共用 |
 | 端對端測試 | Playwright | 真實瀏覽器驗證完整流程，可模擬手機裝置與輸入法 |
 
 ## 架構
@@ -128,11 +138,15 @@ export const eventHooks = createResourceHooks('events', eventApi, '活動')
 createResourceHooks                      React Query 包裝
   ▼
 ResourceApi（list / get / create / update / remove）
-  ├─ mock-api   VITE_USE_MOCK 不是 false 時（預設），資料存在 localStorage
-  └─ http-api   VITE_USE_MOCK=false 時，呼叫 RESTful API
+  ▼
+http()                                   fetch 封裝：帶上 token、統一錯誤格式、401 自動登出
+  ▼
+網路請求 GET /api/events?page=1&status=published
+  ├─ Demo（預設）  MSW 攔截，模擬伺服器回應，資料存在 localStorage
+  └─ 正式環境      VITE_USE_MOCK=false，送到真實後端
 ```
 
-切換環境變數就能從假資料改接真實後端，頁面與 hooks 都不用改。API 格式請見[開發指南](docs/DEVELOPMENT.md#串接真實後端)。
+前端只有一條資料路徑，切換環境變數就能從模擬伺服器改接真實後端。API 格式請見[開發指南](docs/DEVELOPMENT.md#串接真實後端)。
 
 ```
 src/
@@ -145,8 +159,8 @@ src/
 
 ## 品質保證
 
-- **單元與元件測試**：Vitest + Testing Library，涵蓋角色權限矩陣、API 層 401／403、登入導回與 redirect 安全性、表單驗證、震動提示、中文輸入法、列表網址狀態、卡片版型切換、樂觀更新與失敗還原等情境。
-- **端對端測試**：Playwright 對打包後的正式版本跑真實瀏覽器，包含桌面與手機裝置，涵蓋登入導向、三種角色的權限、登出、新增、編輯、刪除、未儲存提醒、網址狀態、注音選字（以 CDP 模擬輸入法）、樂觀更新與手機版版面。
+- **單元與元件測試**：Vitest + Testing Library，透過 MSW 走真實的 HTTP 路徑，涵蓋模擬伺服器的查詢與 409 規則、角色權限矩陣、API 層 401／403、登入導回與 redirect 安全性、表單驗證、震動提示、中文輸入法、列表網址狀態、卡片版型切換、樂觀更新與失敗還原等情境。
+- **端對端測試**：Playwright 對打包後的正式版本跑真實瀏覽器，包含桌面與手機裝置，涵蓋伺服器錯誤與重新載入、登入導向、三種角色的權限、登出、新增、編輯、刪除、未儲存提醒、網址狀態、注音選字（以 CDP 模擬輸入法）、樂觀更新與手機版版面。
 - **CI**：每次推送都會在 GitHub Actions 跑 lint、型別檢查、單元測試、打包與端對端測試，失敗時上傳 Playwright 報告。
 - **部署**：推送到 `main` 後由 Vercel 自動部署，並設定 SPA 路由回退與靜態資源長期快取。
 
@@ -164,11 +178,17 @@ npm run typecheck   # 型別檢查
 npm run build       # 型別檢查 + 打包
 ```
 
-預設使用假資料，不需要後端。想還原初始資料：開發者工具 → Application → Local Storage → 刪除 `mock:*` 開頭的項目。
+預設由 MSW 模擬伺服器回應，不需要後端。在瀏覽器 Console 可以調整模擬行為（設定後重新整理）：
+
+```js
+localStorage.setItem('mock:latency', '2000')  // 每個請求延遲 2 秒
+localStorage.setItem('mock:errorRate', '0.3') // 30% 的請求回傳 500
+```
+
+想還原初始資料：開發者工具 → Application → Local Storage → 刪除 `mock:` 開頭的項目。
 
 新增模組的步驟、資料夾慣例與常見任務，請見 **[開發指南](docs/DEVELOPMENT.md)**。
 
 ## 接下來的規劃
 
-- [ ] 改用 MSW 在網路層模擬 API，模擬延遲與伺服器錯誤
 - [ ] 員工報名活動與名額控管

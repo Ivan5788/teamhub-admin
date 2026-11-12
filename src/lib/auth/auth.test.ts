@@ -1,9 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { createMockApi } from '@/lib/api/mock-api'
-import type { BaseEntity } from '@/lib/api'
-import { loginAs } from '@/test/auth'
 import {
-  clearSession,
   createDemoSession,
   DEMO_PASSWORD,
   demoUserOf,
@@ -30,6 +26,7 @@ describe('hasPermission（RBAC）', () => {
   })
 })
 
+// API 層的 401 / 403 檢查見 src/lib/api/mock/handlers.test.ts
 describe('登入狀態', () => {
   afterEach(() => vi.useRealTimers())
 
@@ -44,37 +41,5 @@ describe('登入狀態', () => {
     const session = await login('Viewer@TeamHub.dev ', DEMO_PASSWORD)
     expect(session.user.role).toBe('viewer')
     await expect(login('viewer@teamhub.dev', 'wrong')).rejects.toThrow('帳號或密碼錯誤')
-  })
-})
-
-describe('API 層權限檢查（模擬後端）', () => {
-  interface Row extends BaseEntity {
-    name: string
-  }
-  const api = createMockApi<Row>({
-    storageKey: 'employees',
-    seed: [{ id: '1', name: 'A', createdAt: '', updatedAt: '' }],
-    searchFields: ['name'],
-    latency: 0,
-  })
-
-  it('檢視者可以讀取，但無法新增', async () => {
-    loginAs('viewer')
-    await expect(api.list({ page: 1, pageSize: 10 })).resolves.toMatchObject({ total: 1 })
-    await expect(api.create({ name: 'B' })).rejects.toMatchObject({
-      status: 403,
-      message: '權限不足：檢視者無法執行這個操作',
-    })
-  })
-
-  it('編輯者可以修改，但無法刪除', async () => {
-    loginAs('editor')
-    await expect(api.update('1', { name: 'A2' })).resolves.toMatchObject({ name: 'A2' })
-    await expect(api.remove('1')).rejects.toMatchObject({ status: 403 })
-  })
-
-  it('未登入時回傳 401', async () => {
-    clearSession()
-    await expect(api.list({ page: 1, pageSize: 10 })).rejects.toMatchObject({ status: 401 })
   })
 })

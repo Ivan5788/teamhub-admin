@@ -1,20 +1,24 @@
+import { USE_MOCK } from './config'
 import { createHttpApi } from './http-api'
-import { createMockApi } from './mock-api'
+import { registerMockResource, type MockResource } from './mock/db'
 import type { BaseEntity, ResourceApi } from './types'
 
-/** .env 設定 VITE_USE_MOCK=false 即切換為真實後端 */
-const USE_MOCK = import.meta.env.VITE_USE_MOCK !== 'false'
-
 interface Options<T extends BaseEntity> {
-  /** REST 路徑名稱，同時作為 mock 的 storage key，例如 'employees' */
+  /** REST 路徑名稱，同時是權限的資源名稱，例如 'employees' */
   resource: string
-  mock: { seed: T[]; searchFields: (keyof T)[] }
+  /** Demo 模式下模擬伺服器使用的資料與規則；串接真實後端時不會用到 */
+  mock: MockResource<T>
 }
 
-/** 每個 feature 的 api.ts 只需要呼叫這個函式 */
+/**
+ * 每個 feature 的 api.ts 只需要呼叫這個函式。
+ * 前端一律透過 HTTP 取資料；Demo 模式由 MSW 在網路層攔截並模擬伺服器回應，
+ * 所以切換到真實後端時，前端程式碼完全不用改。
+ */
 export function createResourceApi<T extends BaseEntity>({
   resource,
   mock,
 }: Options<T>): ResourceApi<T> {
-  return USE_MOCK ? createMockApi<T>({ storageKey: resource, ...mock }) : createHttpApi<T>(resource)
+  if (USE_MOCK) registerMockResource(resource, mock)
+  return createHttpApi<T>(resource)
 }

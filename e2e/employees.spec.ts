@@ -104,3 +104,16 @@ test.describe('搜尋與篩選', () => {
     await expect(page.getByRole('row', { name: /王小明/ })).toBeVisible()
   })
 })
+
+test.describe('錯誤處理', () => {
+  test('伺服器錯誤時顯示錯誤訊息，恢復後可重新載入', async ({ page }) => {
+    // 透過模擬伺服器的設定，讓所有請求回傳 500
+    await page.addInitScript(() => localStorage.setItem('mock:errorRate', '1'))
+    await page.goto('/employees')
+    await expect(page.getByRole('alert')).toContainText('資料載入失敗')
+
+    await page.evaluate(() => localStorage.removeItem('mock:errorRate'))
+    await page.getByRole('button', { name: '重新載入' }).click()
+    await expect(page.getByRole('row', { name: /王小明/ })).toBeVisible()
+  })
+})

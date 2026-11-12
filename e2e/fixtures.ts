@@ -19,7 +19,7 @@ export const test = base.extend<{ role: Role | null }>({
   page: async ({ page, role }, provide) => {
     if (role) {
       const session = {
-        token: `e2e.${role}`,
+        token: `demo.${USERS[role].id}.e2e`,
         user: USERS[role],
         expiresAt: new Date(Date.now() + 3600_000).toISOString(),
       }
