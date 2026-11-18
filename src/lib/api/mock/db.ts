@@ -69,3 +69,15 @@ export const db: MockDb = {
     }
   },
 }
+
+/** 示範資料改版時遞增：舊版資料會被清掉，回訪的人重新整理就能看到新資料 */
+const SEED_VERSION = '2'
+const SETTINGS = new Set(['mock:latency', 'mock:errorRate', 'mock:seedVersion'])
+
+export function resetIfSeedChanged() {
+  if (localStorage.getItem('mock:seedVersion') === SEED_VERSION) return
+  for (const key of Object.keys(localStorage)) {
+    if (key.startsWith('mock:') && !SETTINGS.has(key)) localStorage.removeItem(key)
+  }
+  localStorage.setItem('mock:seedVersion', SEED_VERSION)
+}

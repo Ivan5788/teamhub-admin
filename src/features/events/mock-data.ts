@@ -84,6 +84,136 @@ const raw: Omit<CompanyEvent, 'id' | 'createdAt' | 'updatedAt'>[] = [
     coverUrl: '',
     status: 'draft',
   },
+  {
+    title: 'Figma 設計系統工作坊',
+    category: 'training',
+    description: '從 Variables、Components 到交付規格，實作一套小型設計系統。',
+    location: '總部 9F 創意空間',
+    ...at(10, 14, 3),
+    capacity: 20,
+    coverUrl: '',
+    status: 'published',
+  },
+  {
+    title: '季度全員大會',
+    category: 'seminar',
+    description: '執行長說明營運成果與下一季重點，會後開放 Q&A。',
+    location: '總部 B1 演講廳（同步直播）',
+    ...at(28, 15, 2),
+    capacity: 200,
+    coverUrl: '',
+    status: 'published',
+  },
+  {
+    title: '羽球社例行練習',
+    category: 'teamBuilding',
+    description: '每週一次，球拍可向社團借用。',
+    location: '內湖運動中心 3F 羽球場',
+    ...at(2, 19, 2),
+    capacity: 12,
+    coverUrl: '',
+    status: 'published',
+  },
+  {
+    title: '聖誕交換禮物派對',
+    category: 'party',
+    description: '禮物預算 500 元，現場有自助餐與音樂表演。',
+    location: '總部 1F 員工餐廳',
+    ...at(37, 18, 3),
+    capacity: 120,
+    coverUrl: '',
+    status: 'published',
+  },
+  {
+    title: '捐血一袋 救人一命',
+    category: 'csr',
+    description: '與捐血中心合作，捐血車停靠總部門口。',
+    location: '總部大樓前廣場',
+    ...at(45, 10, 6),
+    capacity: 60,
+    coverUrl: '',
+    status: 'draft',
+  },
+  {
+    title: 'TypeScript 進階讀書會',
+    category: 'seminar',
+    description: '型別體操、泛型設計與大型專案的型別策略。',
+    location: '總部 10F 小會議室',
+    ...at(-5, 19, 2),
+    capacity: 30,
+    coverUrl: '',
+    status: 'published',
+  },
+  {
+    title: '急救證照訓練',
+    category: 'training',
+    description: 'CPR 與 AED 實作，結訓後取得紅十字會證照。',
+    location: '總部 8F 訓練教室',
+    ...at(-21, 9, 8),
+    capacity: 25,
+    coverUrl: '',
+    status: 'unpublished',
+  },
+  {
+    title: '2027 新春開工春酒',
+    category: 'party',
+    description: '開工第一天的春酒餐會，各部門主管發放開工紅包。',
+    location: '台北晶華酒店 宴會廳',
+    ...at(110, 18, 4),
+    capacity: 300,
+    coverUrl: '',
+    status: 'draft',
+  },
+  {
+    title: '主管領導力培訓',
+    category: 'training',
+    description: '一對一溝通、績效回饋與團隊激勵的實務演練。',
+    location: '總部 8F 訓練教室',
+    ...at(17, 9, 7),
+    capacity: 15,
+    coverUrl: '',
+    status: 'published',
+  },
+  {
+    title: '社區長者陪伴志工',
+    category: 'csr',
+    description: '到社區關懷據點陪長輩聊天、玩桌遊。',
+    location: '內湖區 東湖社區關懷據點',
+    ...at(24, 13, 4),
+    capacity: 20,
+    coverUrl: '',
+    status: 'published',
+  },
+  {
+    title: '產品 Demo Day',
+    category: 'seminar',
+    description: '各產品團隊展示本季成果，評審選出最佳專案。',
+    location: '總部 B1 演講廳',
+    ...at(49, 13, 5),
+    capacity: 100,
+    coverUrl: '',
+    status: 'draft',
+  },
+  {
+    title: '週五桌遊之夜',
+    category: 'teamBuilding',
+    description: '下班後一起玩桌遊，公司提供披薩與飲料。',
+    location: '總部 9F 交誼廳',
+    ...at(1, 18, 3),
+    capacity: 16,
+    coverUrl: '',
+    status: 'published',
+  },
+  {
+    title: '無障礙設計講座',
+    category: 'seminar',
+    description: '邀請視障使用者現身說法，示範螢幕閱讀器操作。',
+    location: '總部 10F 大會議室',
+    ...at(-45, 14, 2),
+    capacity: 80,
+    coverUrl: '',
+    status: 'unpublished',
+  },
 ]
 
 export const eventSeed: CompanyEvent[] = raw.map((e, i) => {
@@ -91,11 +221,35 @@ export const eventSeed: CompanyEvent[] = raw.map((e, i) => {
   return { ...e, id: `evt-${i + 1}`, createdAt, updatedAt: createdAt }
 })
 
-/** 報名資料：React 19 分享會有人報名、新進人員訓練已額滿（5/5），示範不同狀態 */
+/** 非在職員工（留職停薪、離職）的序號，不能報名；mock-data.test.ts 會核對 */
+const INACTIVE = new Set([4, 7, 12, 21, 25, 32, 36, 45])
+const EMPLOYEE_COUNT = 48
+
+/** 從在職員工中依固定間隔挑 count 人：結果固定、不重複 */
+const pick = (count: number, offset: number) => {
+  const active = Array.from({ length: EMPLOYEE_COUNT }, (_, i) => i + 1).filter(
+    (n) => !INACTIVE.has(n),
+  )
+  return Array.from({ length: count }, (_, i) => active[(offset + i * 7) % active.length])
+}
+
+/**
+ * 報名資料，涵蓋各種名額狀態：
+ * React 19 分享會 6/50、新進人員訓練額滿 5/5、羽球社額滿 12/12、
+ * 桌遊之夜 13/16 與設計工作坊 17/20（接近額滿，進度條變色）、已結束的讀書會 18/30
+ */
 const registrations: [eventId: string, employeeIds: number[]][] = [
   ['evt-2', [1, 2, 3, 5, 9, 10]],
   ['evt-3', [6, 8, 11, 13, 1]],
   ['evt-4', [2, 9]],
+  ['evt-8', pick(17, 0)],
+  ['evt-9', pick(30, 3)],
+  ['evt-10', pick(12, 5)],
+  ['evt-11', pick(25, 11)],
+  ['evt-13', pick(18, 2)],
+  ['evt-16', pick(9, 8)],
+  ['evt-17', pick(4, 13)],
+  ['evt-19', pick(13, 1)],
 ]
 
 export const registrationSeed: Registration[] = registrations.flatMap(([eventId, employees]) =>

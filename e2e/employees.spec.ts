@@ -79,6 +79,22 @@ test.describe('搜尋與篩選', () => {
     await expect(page.getByRole('row', { name: /王小明/ })).toBeVisible()
   })
 
+  test('分頁：頁碼寫在網址上，篩選後總筆數跟著更新', async ({ page }) => {
+    await page.goto('/employees')
+    await expect(page.getByText('第 1–10 筆，共 48 筆')).toBeVisible()
+
+    await page.getByRole('button', { name: '下一頁' }).click()
+    await expect(page).toHaveURL(/page=2/)
+    await expect(page.getByText('第 11–20 筆，共 48 筆')).toBeVisible()
+
+    await page.goto('/employees?page=5')
+    await expect(page.getByText('第 41–48 筆，共 48 筆')).toBeVisible()
+    await expect(page.getByRole('button', { name: '下一頁' })).toBeDisabled()
+
+    await page.goto('/employees?status=resigned')
+    await expect(page.getByText('第 1–3 筆，共 3 筆')).toBeVisible()
+  })
+
   test('注音選字過程中不會重複字元', async ({ page, browserName }) => {
     test.skip(browserName !== 'chromium', '使用 Chromium 的 CDP 模擬輸入法')
     await page.goto('/employees')

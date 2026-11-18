@@ -1,5 +1,6 @@
 import { setupWorker } from 'msw/browser'
 import { API_BASE_URL } from '../config'
+import { resetIfSeedChanged } from './db'
 import { handlers } from './handlers'
 
 /**
@@ -8,6 +9,7 @@ import { handlers } from './handlers'
  * 頁面導覽與靜態檔案不經過 Service Worker，避免轉送失敗時整個頁面打不開。
  */
 export async function startMockServer() {
+  resetIfSeedChanged()
   await setupWorker(...handlers).start({
     serviceWorker: { url: `/mock-sw.js?api=${encodeURIComponent(API_BASE_URL)}` },
     onUnhandledFrame: 'bypass',
