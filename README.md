@@ -122,6 +122,16 @@ export const eventHooks = createResourceHooks('events', eventApi, '活動')
 - 載入時顯示骨架畫面；查無資料時提供「清除搜尋與篩選」或「新增」的下一步。
 - 頁面依路由延遲載入，路由層級有錯誤頁，單頁出錯不會讓整個應用程式白畫面。
 
+### SEO：做足基礎，但刻意不被收錄
+
+這是作品集 Demo，只想透過履歷上的連結分享，不希望被無關的人搜尋到。
+
+- 該有的都有：每頁獨立標題、meta description、canonical、Open Graph／Twitter 分享卡片（1200×630 預覽圖）、`WebApplication` 結構化資料（JSON-LD）。
+- 用兩層 `noindex, nofollow` 擋收錄：HTML 的 `<meta name="robots">`，以及 Vercel 對所有路徑回應的 `X-Robots-Tag` 標頭，連圖片、JS 這類非 HTML 檔也涵蓋。
+- `robots.txt` 刻意**允許**爬取。若在 robots.txt 用 `Disallow` 封鎖，爬蟲讀不到頁面上的 `noindex`，網址仍可能因為外部連結而出現在搜尋結果。
+- E2E 測試會檢查上述標記和分享圖片確實存在。
+- 取捨：因為設了 `noindex`，Lighthouse 的 SEO 分數會扣「可被索引」這一項，這是預期內的結果。正式上線時拿掉 `robots` meta 和 `X-Robots-Tag` 就能開放收錄。
+
 ## 技術選型
 
 | 用途 | 選擇 | 理由 |

@@ -1,0 +1,4 @@
+# 允許爬取，搜尋引擎才讀得到頁面上的 noindex。
+# 若在這裡 Disallow，爬蟲看不到 noindex，網址仍可能只憑外部連結被收錄。
+User-agent: *
+Allow: /

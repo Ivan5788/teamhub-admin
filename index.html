@@ -2,11 +2,60 @@
 <html lang="zh-Hant">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content"
+    />
     <title>TeamHub 企業管理後台</title>
+    <meta
+      name="description"
+      content="TeamHub 是以 React 19、TypeScript 打造的企業人員與活動管理後台作品，示範角色權限、活動報名規則、表單驗證與響應式設計。"
+    />
+
+    <!--
+      作品集 Demo：不希望出現在搜尋結果，只透過履歷上的連結分享。
+      noindex 必須讓搜尋引擎「讀得到」才會生效，所以 robots.txt 允許爬取，
+      並在 vercel.json 對所有路徑加上 X-Robots-Tag 標頭。
+    -->
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="canonical" href="https://teamhub-admin.vercel.app/" />
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="theme-color" content="#4f46e5" />
+
+    <!-- 分享到 LinkedIn、Facebook、Slack 時的預覽卡片 -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="TeamHub" />
+    <meta property="og:locale" content="zh_TW" />
+    <meta property="og:url" content="https://teamhub-admin.vercel.app/" />
+    <meta property="og:title" content="TeamHub 企業管理後台" />
+    <meta
+      property="og:description"
+      content="React 19 + TypeScript 企業管理後台作品：角色權限、活動報名規則、表單驗證與響應式設計。"
+    />
+    <meta property="og:image" content="https://teamhub-admin.vercel.app/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="TeamHub 活動管理頁面：活動列表、報名人數與上架狀態" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <!-- 結構化資料：讓搜尋引擎理解這是一個網頁應用程式 -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "TeamHub 企業管理後台",
+        "url": "https://teamhub-admin.vercel.app/",
+        "applicationCategory": "BusinessApplication",
+        "operatingSystem": "Web",
+        "inLanguage": "zh-Hant",
+        "description": "企業人員與活動管理後台，示範角色權限、活動報名規則、表單驗證與響應式設計。",
+        "image": "https://teamhub-admin.vercel.app/og-image.png"
+      }
+    </script>
   </head>
   <body>
+    <noscript>TeamHub 企業管理後台需要啟用 JavaScript 才能使用。</noscript>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
